@@ -1,12 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import React from "react";
-import {
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProgressRing } from "@/components/ProgressRing";
 import { useApp } from "@/context/AppContext";
@@ -17,11 +11,39 @@ import {
   getPrayerCompletionPercent,
   getTotalRemaining,
 } from "@/utils/calculations";
+import { getNextMilestone, getPreviousMilestone, MILESTONES } from "@/utils/milestones";
+import { isStreakActive } from "@/utils/streak";
+
+function estimateCompletionDays(
+  totalRemaining: number,
+  setupDate: string | null,
+  totalCompleted: number
+): { days: number | null; label: string } {
+  if (totalRemaining === 0) return { days: 0, label: "All done!" };
+  if (!setupDate || totalCompleted === 0) return { days: null, label: "Log prayers to see estimate" };
+  const daysSinceSetup = Math.max(
+    1,
+    Math.round((Date.now() - new Date(setupDate).getTime()) / 86400000)
+  );
+  const dailyRate = totalCompleted / daysSinceSetup;
+  if (dailyRate < 0.1) return { days: null, label: "Log more to see estimate" };
+  const daysLeft = Math.ceil(totalRemaining / dailyRate);
+  if (daysLeft > 365 * 30) return { days: null, label: "Keep logging daily to improve" };
+  if (daysLeft > 365) {
+    const years = Math.round(daysLeft / 365);
+    return { days: daysLeft, label: `~${years} year${years !== 1 ? "s" : ""} at current pace` };
+  }
+  if (daysLeft > 30) {
+    const months = Math.round(daysLeft / 30);
+    return { days: daysLeft, label: `~${months} month${months !== 1 ? "s" : ""} at current pace` };
+  }
+  return { days: daysLeft, label: `~${daysLeft} day${daysLeft !== 1 ? "s" : ""} at current pace` };
+}
 
 export default function ProgressScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { currentCounts, initialCounts, totalCompleted } = useApp();
+  const { currentCounts, initialCounts, totalCompleted, streak, setupDate } = useApp();
 
   const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
   const bottomPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
@@ -35,13 +57,27 @@ export default function ProgressScreen() {
   const totalRemaining = getTotalRemaining(currentCounts);
   const totalCompletedCalc = totalInitial - totalRemaining;
 
+  const { label: estimateLabel } = estimateCompletionDays(totalRemaining, setupDate, totalCompleted);
+
+  const nextMilestone = getNextMilestone(totalCompleted);
+  const prevMilestone = getPreviousMilestone(totalCompleted);
+  const milestoneProgress = nextMilestone && prevMilestone
+    ? ((totalCompleted - prevMilestone.value) / (nextMilestone.value - prevMilestone.value)) * 100
+    : nextMilestone
+    ? (totalCompleted / nextMilestone.value) * 100
+    : 100;
+
+  const streakActive = isStreakActive(streak);
+
+  const daysSinceSetup = setupDate
+    ? Math.max(1, Math.round((Date.now() - new Date(setupDate).getTime()) / 86400000))
+    : 1;
+  const dailyAvg = totalCompleted > 0 ? (totalCompleted / daysSinceSetup).toFixed(1) : "0";
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
-        contentContainerStyle={[
-          styles.scroll,
-          { paddingTop: topPad + 16, paddingBottom: bottomPad + 24 },
-        ]}
+        contentContainerStyle={[styles.scroll, { paddingTop: topPad + 16, paddingBottom: bottomPad + 24 }]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={[styles.pageTitle, { color: colors.foreground }]}>Progress</Text>
@@ -49,31 +85,71 @@ export default function ProgressScreen() {
         <View style={[styles.overallCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <ProgressRing
             percent={overallPercent}
-            size={140}
-            strokeWidth={12}
+            size={130}
+            strokeWidth={11}
             label={`${Math.round(overallPercent)}%`}
             sublabel="complete"
           />
           <View style={styles.overallStats}>
-            <StatItem label="Total Days" value={totalInitial.toLocaleString()} color={colors.foreground} />
-            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-            <StatItem label="Completed" value={totalCompletedCalc.toLocaleString()} color={colors.emerald} />
-            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-            <StatItem label="Remaining" value={totalRemaining.toLocaleString()} color={colors.mutedForeground} />
+            <StatPill label="Total" value={totalInitial.toLocaleString()} color={colors.foreground} bg={colors.muted} />
+            <StatPill label="Done" value={totalCompletedCalc.toLocaleString()} color={colors.emerald} bg={colors.emeraldLight} />
+            <StatPill label="Left" value={totalRemaining.toLocaleString()} color={colors.mutedForeground} bg={colors.muted} />
           </View>
         </View>
 
-        <View style={[styles.sessionCard, { backgroundColor: colors.goldLight, borderColor: colors.gold }]}>
-          <Feather name="award" size={18} color={colors.gold} />
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.sessionValue, { color: colors.gold }]}>
-              {totalCompleted.toLocaleString()}
+        <View style={styles.statsGrid}>
+          <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border, flex: 1 }]}>
+            <Text style={[styles.statIcon]}>📅</Text>
+            <Text style={[styles.statBigVal, { color: colors.foreground }]}>{dailyAvg}</Text>
+            <Text style={[styles.statCardLabel, { color: colors.mutedForeground }]}>avg / day</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: streakActive ? colors.goldLight : colors.card, borderColor: streakActive ? colors.gold : colors.border, flex: 1 }]}>
+            <Text style={styles.statIcon}>🔥</Text>
+            <Text style={[styles.statBigVal, { color: streakActive ? colors.gold : colors.foreground }]}>
+              {streak.currentStreak}
             </Text>
-            <Text style={[styles.sessionLabel, { color: colors.gold }]}>
-              prayers logged this session
-            </Text>
+            <Text style={[styles.statCardLabel, { color: streakActive ? colors.gold : colors.mutedForeground }]}>day streak</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border, flex: 1 }]}>
+            <Text style={styles.statIcon}>🏆</Text>
+            <Text style={[styles.statBigVal, { color: colors.foreground }]}>{streak.longestStreak}</Text>
+            <Text style={[styles.statCardLabel, { color: colors.mutedForeground }]}>best streak</Text>
           </View>
         </View>
+
+        <View style={[styles.estimateCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.estimateLeft}>
+            <Feather name="clock" size={18} color={colors.emerald} />
+            <View>
+              <Text style={[styles.estimateTitle, { color: colors.foreground }]}>Completion Estimate</Text>
+              <Text style={[styles.estimateLabel, { color: colors.mutedForeground }]}>{estimateLabel}</Text>
+            </View>
+          </View>
+        </View>
+
+        {nextMilestone && (
+          <View style={[styles.milestoneCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.milestoneHeader}>
+              <Text style={styles.milestoneEmoji}>{nextMilestone.emoji}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.milestoneTitle, { color: colors.foreground }]}>
+                  Next: {nextMilestone.title}
+                </Text>
+                <Text style={[styles.milestoneSub, { color: colors.mutedForeground }]}>
+                  {(nextMilestone.value - totalCompleted).toLocaleString()} prayers away · {nextMilestone.value.toLocaleString()} total
+                </Text>
+              </View>
+            </View>
+            <View style={[styles.milestoneTrack, { backgroundColor: colors.muted }]}>
+              <View
+                style={[
+                  styles.milestoneFill,
+                  { width: `${Math.min(100, milestoneProgress)}%` as any, backgroundColor: colors.gold },
+                ]}
+              />
+            </View>
+          </View>
+        )}
 
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Per Prayer</Text>
 
@@ -96,124 +172,138 @@ export default function ProgressScreen() {
                 },
               ]}
             >
-              <View style={styles.prayerLeft}>
-                <View style={[styles.prayerDot, { backgroundColor: prayer.color }]} />
-                <View>
-                  <Text style={[styles.prayerName, { color: colors.foreground }]}>{prayer.name}</Text>
+              <View style={styles.prayerTop}>
+                <View style={[styles.prayerIconBg, { backgroundColor: prayer.color + "22" }]}>
+                  <View style={[styles.prayerDot, { backgroundColor: prayer.color }]} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prayerName, { color: colors.foreground }]}>
+                    {prayer.name}
+                    <Text style={[styles.prayerArabic, { color: colors.mutedForeground }]}>
+                      {"  "}{prayer.arabicName}
+                    </Text>
+                  </Text>
                   <Text style={[styles.prayerMeta, { color: colors.mutedForeground }]}>
-                    {completed.toLocaleString()} / {initial.toLocaleString()}
+                    {completed.toLocaleString()} done · {current.toLocaleString()} left
                   </Text>
                 </View>
-              </View>
-
-              <View style={styles.prayerRight}>
                 {isComplete ? (
                   <View style={[styles.doneBadge, { backgroundColor: colors.goldLight }]}>
-                    <Text style={[styles.doneBadgeText, { color: colors.gold }]}>Done</Text>
+                    <Text style={[styles.doneBadgeText, { color: colors.gold }]}>✓ Done</Text>
                   </View>
                 ) : (
-                  <Text style={[styles.prayerPct, { color: prayer.color }]}>
-                    {Math.round(pct)}%
-                  </Text>
+                  <Text style={[styles.prayerPct, { color: prayer.color }]}>{Math.round(pct)}%</Text>
                 )}
               </View>
-
               <View style={[styles.barTrack, { backgroundColor: colors.muted }]}>
-                <View
-                  style={[
-                    styles.barFill,
-                    { width: `${pct}%` as any, backgroundColor: prayer.color },
-                  ]}
-                />
+                <View style={[styles.barFill, { width: `${pct}%` as any, backgroundColor: isComplete ? colors.gold : prayer.color }]} />
               </View>
             </View>
           );
         })}
+
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Milestones</Text>
+        <View style={[styles.milestonesGrid, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {MILESTONES.map((m, i) => {
+            const achieved = totalCompleted >= m.value;
+            return (
+              <React.Fragment key={m.value}>
+                {i > 0 && <View style={[styles.mDivider, { backgroundColor: colors.border }]} />}
+                <View style={styles.mRow}>
+                  <Text style={[styles.mEmoji, { opacity: achieved ? 1 : 0.3 }]}>{m.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.mTitle, { color: achieved ? colors.foreground : colors.mutedForeground }]}>
+                      {m.title}
+                    </Text>
+                    <Text style={[styles.mSub, { color: colors.mutedForeground }]}>
+                      {m.value.toLocaleString()} prayers
+                    </Text>
+                  </View>
+                  {achieved && (
+                    <View style={[styles.mBadge, { backgroundColor: colors.goldLight }]}>
+                      <Feather name="check" size={12} color={colors.gold} />
+                    </View>
+                  )}
+                </View>
+              </React.Fragment>
+            );
+          })}
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-function StatItem({ label, value, color }: { label: string; value: string; color: string }) {
+function StatPill({ label, value, color, bg }: { label: string; value: string; color: string; bg: string }) {
   return (
-    <View style={styles.statItem}>
-      <Text style={[styles.statValue, { color }]}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
+    <View style={[pillStyles.pill, { backgroundColor: bg }]}>
+      <Text style={[pillStyles.val, { color }]}>{value}</Text>
+      <Text style={pillStyles.label}>{label}</Text>
     </View>
   );
 }
 
+const pillStyles = StyleSheet.create({
+  pill: { flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12 },
+  val: { fontSize: 17, fontFamily: "Inter_700Bold" },
+  label: { fontSize: 10, fontFamily: "Inter_400Regular", color: "#737373", marginTop: 1 },
+});
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  scroll: { paddingHorizontal: 18 },
-  pageTitle: {
-    fontSize: 26,
-    fontFamily: "Inter_700Bold",
-    marginBottom: 20,
-  },
+  scroll: { paddingHorizontal: 16 },
+  pageTitle: { fontSize: 24, fontFamily: "Inter_700Bold", marginBottom: 16 },
   overallCard: {
-    borderRadius: 18,
-    padding: 24,
-    alignItems: "center",
-    gap: 20,
-    borderWidth: 1,
-    marginBottom: 14,
+    borderRadius: 18, borderWidth: 1, padding: 20,
+    alignItems: "center", gap: 16, marginBottom: 12,
   },
-  overallStats: {
-    flexDirection: "row",
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "space-around",
+  overallStats: { flexDirection: "row", width: "100%", gap: 8 },
+  statsGrid: { flexDirection: "row", gap: 8, marginBottom: 12 },
+  statCard: {
+    borderRadius: 14, borderWidth: 1, padding: 14,
+    alignItems: "center", gap: 4,
   },
-  statItem: { alignItems: "center", gap: 4 },
-  statValue: { fontSize: 20, fontFamily: "Inter_700Bold" },
-  statLabel: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#737373" },
-  statDivider: { width: 1, height: 36 },
-  sessionCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    marginBottom: 24,
+  statIcon: { fontSize: 20 },
+  statBigVal: { fontSize: 20, fontFamily: "Inter_700Bold" },
+  statCardLabel: { fontSize: 10, fontFamily: "Inter_400Regular" },
+  estimateCard: {
+    borderRadius: 14, borderWidth: 1, padding: 16,
+    marginBottom: 12,
   },
-  sessionValue: { fontSize: 22, fontFamily: "Inter_700Bold", lineHeight: 26 },
-  sessionLabel: { fontSize: 13, fontFamily: "Inter_400Regular" },
-  sectionTitle: { fontSize: 18, fontFamily: "Inter_700Bold", marginBottom: 12 },
+  estimateLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
+  estimateTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  estimateLabel: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 2 },
+  milestoneCard: {
+    borderRadius: 14, borderWidth: 1, padding: 16,
+    marginBottom: 20, gap: 10,
+  },
+  milestoneHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
+  milestoneEmoji: { fontSize: 28 },
+  milestoneTitle: { fontSize: 14, fontFamily: "Inter_700Bold" },
+  milestoneSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
+  milestoneTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
+  milestoneFill: { height: 6, borderRadius: 3 },
+  sectionTitle: { fontSize: 17, fontFamily: "Inter_700Bold", marginBottom: 10 },
   prayerRow: {
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 18,
-    marginBottom: 10,
-    overflow: "hidden",
+    borderRadius: 14, paddingHorizontal: 14, paddingTop: 12,
+    paddingBottom: 14, marginBottom: 8, gap: 10, overflow: "hidden",
   },
-  prayerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  prayerDot: { width: 10, height: 10, borderRadius: 5 },
-  prayerName: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
-  prayerMeta: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 1 },
-  prayerRight: {
-    position: "absolute",
-    right: 16,
-    top: 14,
-  },
-  prayerPct: { fontSize: 18, fontFamily: "Inter_700Bold" },
-  doneBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  doneBadgeText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
-  barTrack: {
-    height: 3,
-    borderRadius: 2,
-    marginTop: 12,
-    overflow: "hidden",
-  },
-  barFill: { height: 3, borderRadius: 2 },
+  prayerTop: { flexDirection: "row", alignItems: "center", gap: 10 },
+  prayerIconBg: { width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  prayerDot: { width: 9, height: 9, borderRadius: 5 },
+  prayerName: { fontSize: 14, fontFamily: "Inter_700Bold" },
+  prayerArabic: { fontSize: 12, fontFamily: "Inter_400Regular" },
+  prayerMeta: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 1 },
+  prayerPct: { fontSize: 17, fontFamily: "Inter_700Bold" },
+  doneBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  doneBadgeText: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
+  barTrack: { height: 4, borderRadius: 2, overflow: "hidden" },
+  barFill: { height: 4, borderRadius: 2 },
+  milestonesGrid: { borderRadius: 16, borderWidth: 1, overflow: "hidden", marginBottom: 16 },
+  mRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
+  mDivider: { height: 1, marginHorizontal: 16 },
+  mEmoji: { fontSize: 22, width: 32, textAlign: "center" },
+  mTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  mSub: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 1 },
+  mBadge: { width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
 });

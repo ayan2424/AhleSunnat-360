@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { PrayerCounts, UserProfile } from "./calculations";
+import type { StreakData } from "./streak";
 
 const KEYS = {
   USER_PROFILE: "qaza_user_profile",
@@ -7,6 +8,18 @@ const KEYS = {
   CURRENT_COUNTS: "qaza_current_counts",
   ONBOARDING_DONE: "qaza_onboarding_done",
   TOTAL_COMPLETED: "qaza_total_completed",
+  STREAK_DATA: "qaza_streak_data",
+  HISTORY: "qaza_history",
+  SETUP_DATE: "qaza_setup_date",
+};
+
+export type DailyHistory = Record<string, number>;
+
+const DEFAULT_STREAK: StreakData = {
+  currentStreak: 0,
+  longestStreak: 0,
+  lastLogDate: null,
+  totalDaysLogged: 0,
 };
 
 export async function saveUserProfile(profile: UserProfile): Promise<void> {
@@ -45,6 +58,39 @@ export async function loadTotalCompleted(): Promise<number> {
   return raw ? parseInt(raw, 10) : 0;
 }
 
+export async function saveStreakData(streak: StreakData): Promise<void> {
+  await AsyncStorage.setItem(KEYS.STREAK_DATA, JSON.stringify(streak));
+}
+
+export async function loadStreakData(): Promise<StreakData> {
+  const raw = await AsyncStorage.getItem(KEYS.STREAK_DATA);
+  return raw ? JSON.parse(raw) : DEFAULT_STREAK;
+}
+
+export async function saveHistory(history: DailyHistory): Promise<void> {
+  await AsyncStorage.setItem(KEYS.HISTORY, JSON.stringify(history));
+}
+
+export async function loadHistory(): Promise<DailyHistory> {
+  const raw = await AsyncStorage.getItem(KEYS.HISTORY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+export async function incrementHistoryToday(history: DailyHistory, count: number): Promise<DailyHistory> {
+  const today = new Date().toISOString().split("T")[0];
+  const updated = { ...history, [today]: (history[today] ?? 0) + count };
+  await saveHistory(updated);
+  return updated;
+}
+
+export async function saveSetupDate(date: string): Promise<void> {
+  await AsyncStorage.setItem(KEYS.SETUP_DATE, date);
+}
+
+export async function loadSetupDate(): Promise<string | null> {
+  return AsyncStorage.getItem(KEYS.SETUP_DATE);
+}
+
 export async function markOnboardingDone(): Promise<void> {
   await AsyncStorage.setItem(KEYS.ONBOARDING_DONE, "true");
 }
@@ -59,12 +105,24 @@ export async function clearAllData(): Promise<void> {
 }
 
 export async function exportDataAsJson(): Promise<string> {
-  const profile = await loadUserProfile();
-  const initial = await loadInitialCounts();
-  const current = await loadCurrentCounts();
-  const totalCompleted = await loadTotalCompleted();
+  const [profile, initial, current, totalCompleted, streak, history] = await Promise.all([
+    loadUserProfile(),
+    loadInitialCounts(),
+    loadCurrentCounts(),
+    loadTotalCompleted(),
+    loadStreakData(),
+    loadHistory(),
+  ]);
   return JSON.stringify(
-    { profile, initialCounts: initial, currentCounts: current, totalCompleted, exportedAt: new Date().toISOString() },
+    {
+      profile,
+      initialCounts: initial,
+      currentCounts: current,
+      totalCompleted,
+      streak,
+      history,
+      exportedAt: new Date().toISOString(),
+    },
     null,
     2
   );
