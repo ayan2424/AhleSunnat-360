@@ -1,0 +1,25 @@
+​Act as an expert mobile app developer and UI/UX designer. I want to build a "Qaza Namaz Tracker" mobile app using Flutter (or React Native).
+​The app must strictly follow Islamic guidelines for calculating Qaza-e-Umri and provide a clean, respectful, and user-friendly interface.
+​Please generate the complete architecture, UI design system, and code for the following features:
+​ONBOARDING & CALCULATION LOGIC:
+​Ask for the user's gender.
+​Ask for the approximate age or date when they reached puberty (Bulooghat).
+​Ask for their current age.
+​Calculate the total lapsed years/months.
+​Deduct the average days of menstruation (for female users) based on their input.
+​Automatically calculate the total number of Qaza Namaz days, breaking it down into individual prayers per day: Fajar (2 Farz), Zohar (4 Farz), Asar (4 Farz), Maghrib (3 Farz), Isha (4 Farz), and Witr (3 Wajib).
+​TRACKING & COUNT MANAGEMENT (MAIN DASHBOARD):
+​A clean dashboard showing the total remaining counts for each of the 6 prayers.
+​Large, easy-to-tap "+" and "-" buttons next to each prayer so the user can quickly log a prayer they just offered, or undo a mistake.
+​A "Quick Log" feature to mark a whole day's Qaza (all 6 prayers) as completed with a single tap.
+​RECOVERY & BACKUP:
+​Local storage (SQLite or Hive) to save progress offline.
+​Option to back up data to Google Drive or export as a JSON/CSV file so progress is never lost.
+​UI/UX DESIGN SPECIFICATIONS:
+​Theme: Minimalist, modern, and spiritual. Use a soothing palette like Deep Emerald Green, Soft Gold accents, and a clean White/Off-White background. Dark mode support is required.
+​Clear typography with readable counters.
+​No distracting animations; keep transitions smooth and dignified.
+​REMINDERS & NOTIFICATIONS:
+​Gentle daily or weekly push notifications to remind the user to log or pray their Qaza.
+​Inspirational quotes or Hadiths about the importance of completing missed prayers, shown randomly on the dashboard.
+​Please write clean, modular, and well-commented code for the main dashboard screen, state management, and the calculation logic.
