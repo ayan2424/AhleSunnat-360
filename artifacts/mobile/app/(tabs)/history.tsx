@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
-import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useApp } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
+import { useLayout } from "@/hooks/useLayout";
+import { useTranslation } from "@/hooks/useTranslation";
 import { isStreakActive } from "@/utils/streak";
 
 const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
 const WEEKS = 14;
-const CELL = 22;
 const GAP = 4;
 
 function getIntensity(count: number): number {
@@ -65,18 +65,22 @@ function getMonthLabels(weeks: ReturnType<typeof buildGrid>["weeks"]) {
 
 export default function HistoryScreen() {
   const colors = useColors();
-  const insets = useSafeAreaInsets();
-  const { history, streak, totalCompleted, setupDate } = useApp();
+  const { topPad, scrollBottom } = useLayout();
+  const { t, isRTL } = useTranslation();
+  const { width: screenWidth } = useWindowDimensions();
+  const { history, streak } = useApp();
 
-  const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const bottomPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
+  // Responsive cell size: fit within available width with some margins
+  const calPaddingH = 16 + 24 + 4; // card padding + day labels + gap
+  const availableWidth = screenWidth - calPaddingH - 32; // 32 for outer scroll padding
+  const CELL = Math.max(16, Math.min(22, Math.floor((availableWidth - (WEEKS - 1) * GAP) / WEEKS)));
 
-  const { weeks, gridStart } = useMemo(() => buildGrid(history), [history]);
+  const { weeks } = useMemo(() => buildGrid(history), [history]);
   const monthLabels = useMemo(() => getMonthLabels(weeks), [weeks]);
 
   const streakActive = isStreakActive(streak);
 
-  const totalDaysLogged = Object.keys(history).filter(k => history[k] > 0).length;
+  const totalDaysLogged = Object.keys(history).filter((k) => history[k] > 0).length;
   const totalPrayersInHistory = Object.values(history).reduce((s, v) => s + v, 0);
   const bestDay = Object.values(history).reduce((m, v) => Math.max(m, v), 0);
 
@@ -88,13 +92,17 @@ export default function HistoryScreen() {
     colors.emerald,
   ];
 
+  const lastWeeksText = t("lastWeeks").replace("{n}", String(WEEKS));
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingTop: topPad + 16, paddingBottom: bottomPad + 24 }]}
+        contentContainerStyle={[styles.scroll, { paddingTop: topPad + 16, paddingBottom: scrollBottom }]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.pageTitle, { color: colors.foreground }]}>History</Text>
+        <Text style={[styles.pageTitle, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
+          {t("history")}
+        </Text>
 
         <View style={styles.streakRow}>
           <View style={[styles.streakCard, {
@@ -106,25 +114,27 @@ export default function HistoryScreen() {
               {streak.currentStreak}
             </Text>
             <Text style={[styles.streakLabel, { color: streakActive ? colors.gold : colors.mutedForeground }]}>
-              current streak
+              {t("currentStreak")}
             </Text>
           </View>
           <View style={[styles.streakCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={styles.streakEmoji}>🏆</Text>
             <Text style={[styles.streakNum, { color: colors.foreground }]}>{streak.longestStreak}</Text>
-            <Text style={[styles.streakLabel, { color: colors.mutedForeground }]}>best streak</Text>
+            <Text style={[styles.streakLabel, { color: colors.mutedForeground }]}>{t("bestStreak")}</Text>
           </View>
           <View style={[styles.streakCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={styles.streakEmoji}>📅</Text>
             <Text style={[styles.streakNum, { color: colors.foreground }]}>{totalDaysLogged}</Text>
-            <Text style={[styles.streakLabel, { color: colors.mutedForeground }]}>days logged</Text>
+            <Text style={[styles.streakLabel, { color: colors.mutedForeground }]}>{t("daysLogged")}</Text>
           </View>
         </View>
 
         <View style={[styles.calCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.calTitle, { color: colors.foreground }]}>Prayer Activity</Text>
-          <Text style={[styles.calSub, { color: colors.mutedForeground }]}>
-            Last {WEEKS} weeks · darker = more prayers logged
+          <Text style={[styles.calTitle, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
+            {t("prayerActivity")}
+          </Text>
+          <Text style={[styles.calSub, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
+            {lastWeeksText}
           </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.calScroll}>
@@ -139,23 +149,33 @@ export default function HistoryScreen() {
               </View>
 
               <View style={styles.gridContainer}>
-                <View style={styles.dayLabels}>
+                <View style={[styles.dayLabels, { gap: GAP }]}>
                   {DAYS.map((d, i) => (
-                    <Text key={i} style={[styles.dayLabel, { color: colors.mutedForeground }]}>{d}</Text>
+                    <Text
+                      key={i}
+                      style={[
+                        styles.dayLabel,
+                        { color: colors.mutedForeground, height: CELL, lineHeight: CELL },
+                      ]}
+                    >
+                      {d}
+                    </Text>
                   ))}
                 </View>
 
-                <View style={styles.grid}>
+                <View style={[styles.grid, { gap: GAP }]}>
                   {weeks.map((week, wi) => (
-                    <View key={wi} style={styles.weekCol}>
+                    <View key={wi} style={[styles.weekCol, { gap: GAP }]}>
                       {week.map((day, di) => {
                         const intensity = day.isFuture ? -1 : getIntensity(day.count);
                         return (
                           <View
                             key={di}
                             style={[
-                              styles.cell,
                               {
+                                width: CELL,
+                                height: CELL,
+                                borderRadius: Math.max(3, CELL * 0.22),
                                 backgroundColor: intensity < 0 ? "transparent" : intensityColors[intensity],
                                 borderWidth: day.isToday ? 2 : 0,
                                 borderColor: day.isToday ? colors.gold : "transparent",
@@ -169,12 +189,12 @@ export default function HistoryScreen() {
                 </View>
               </View>
 
-              <View style={styles.legendRow}>
-                <Text style={[styles.legendLabel, { color: colors.mutedForeground }]}>Less</Text>
+              <View style={[styles.legendRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                <Text style={[styles.legendLabel, { color: colors.mutedForeground }]}>{t("less")}</Text>
                 {[0, 1, 2, 3, 4].map((i) => (
-                  <View key={i} style={[styles.cell, { backgroundColor: intensityColors[i] }]} />
+                  <View key={i} style={{ width: CELL, height: CELL, borderRadius: Math.max(3, CELL * 0.22), backgroundColor: intensityColors[i] }} />
                 ))}
-                <Text style={[styles.legendLabel, { color: colors.mutedForeground }]}>More</Text>
+                <Text style={[styles.legendLabel, { color: colors.mutedForeground }]}>{t("more")}</Text>
               </View>
             </View>
           </ScrollView>
@@ -186,28 +206,28 @@ export default function HistoryScreen() {
             <Text style={[styles.statVal, { color: colors.foreground }]}>
               {totalPrayersInHistory.toLocaleString()}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>total logged</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t("totalLogged")}</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={styles.statEmoji}>⚡</Text>
             <Text style={[styles.statVal, { color: colors.foreground }]}>{bestDay}</Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>best day</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t("bestDay")}</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={styles.statEmoji}>📈</Text>
             <Text style={[styles.statVal, { color: colors.foreground }]}>
               {totalDaysLogged > 0 ? (totalPrayersInHistory / totalDaysLogged).toFixed(1) : "0"}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>avg on active days</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t("avgActiveDays")}</Text>
           </View>
         </View>
 
         {totalDaysLogged === 0 && (
           <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={styles.emptyEmoji}>🌙</Text>
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No History Yet</Text>
-            <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
-              Start logging prayers from the Tracker tab and your activity will appear here.
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("noHistory")}</Text>
+            <Text style={[styles.emptySub, { color: colors.mutedForeground, textAlign: "center" }]}>
+              {t("noHistoryDesc")}
             </Text>
           </View>
         )}
@@ -220,7 +240,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { paddingHorizontal: 16 },
   pageTitle: { fontSize: 24, fontFamily: "Inter_700Bold", marginBottom: 16 },
-
   streakRow: { flexDirection: "row", gap: 8, marginBottom: 14 },
   streakCard: {
     flex: 1, alignItems: "center", paddingVertical: 14,
@@ -229,39 +248,26 @@ const styles = StyleSheet.create({
   streakEmoji: { fontSize: 20 },
   streakNum: { fontSize: 22, fontFamily: "Inter_700Bold" },
   streakLabel: { fontSize: 10, fontFamily: "Inter_400Regular", textAlign: "center" },
-
-  calCard: {
-    borderRadius: 18, borderWidth: 1, padding: 16,
-    marginBottom: 14, overflow: "hidden",
-  },
+  calCard: { borderRadius: 18, borderWidth: 1, padding: 16, marginBottom: 14, overflow: "hidden" },
   calTitle: { fontSize: 15, fontFamily: "Inter_700Bold", marginBottom: 2 },
   calSub: { fontSize: 11, fontFamily: "Inter_400Regular", marginBottom: 12 },
   calScroll: { marginHorizontal: -4 },
   monthRow: { position: "relative", marginLeft: 24, paddingLeft: 4 },
   monthLabel: { fontSize: 10, fontFamily: "Inter_600SemiBold" },
   gridContainer: { flexDirection: "row" },
-  dayLabels: { width: 20, gap: GAP, paddingTop: 0 },
-  dayLabel: { fontSize: 9, fontFamily: "Inter_400Regular", height: CELL, lineHeight: CELL, textAlign: "right" },
-  grid: { flexDirection: "row", gap: GAP, paddingLeft: 4 },
-  weekCol: { flexDirection: "column", gap: GAP },
-  cell: { width: CELL, height: CELL, borderRadius: 5 },
-  legendRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 10, marginLeft: 24 },
+  dayLabels: { width: 20, paddingTop: 0 },
+  dayLabel: { fontSize: 9, fontFamily: "Inter_400Regular", textAlign: "right" },
+  grid: { flexDirection: "row", paddingLeft: 4 },
+  weekCol: { flexDirection: "column" },
+  legendRow: { alignItems: "center", gap: 4, marginTop: 10, marginLeft: 24 },
   legendLabel: { fontSize: 9, fontFamily: "Inter_400Regular", marginRight: 2 },
-
   statsGrid: { flexDirection: "row", gap: 8, marginBottom: 16 },
-  statCard: {
-    flex: 1, borderRadius: 14, borderWidth: 1,
-    padding: 14, alignItems: "center", gap: 4,
-  },
+  statCard: { flex: 1, borderRadius: 14, borderWidth: 1, padding: 14, alignItems: "center", gap: 4 },
   statEmoji: { fontSize: 20 },
   statVal: { fontSize: 18, fontFamily: "Inter_700Bold" },
   statLabel: { fontSize: 10, fontFamily: "Inter_400Regular", textAlign: "center" },
-
-  emptyState: {
-    borderRadius: 16, borderWidth: 1, padding: 28,
-    alignItems: "center", gap: 10,
-  },
+  emptyState: { borderRadius: 16, borderWidth: 1, padding: 28, alignItems: "center", gap: 10 },
   emptyEmoji: { fontSize: 40 },
   emptyTitle: { fontSize: 17, fontFamily: "Inter_700Bold" },
-  emptySub: { fontSize: 13, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 20 },
+  emptySub: { fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 20 },
 });

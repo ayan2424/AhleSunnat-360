@@ -10,7 +10,9 @@ import {
   View,
 } from "react-native";
 import { useColors } from "@/hooks/useColors";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { PrayerInfo } from "@/utils/calculations";
+import type { TranslationKey } from "@/utils/translations";
 
 interface PrayerCardProps {
   prayer: PrayerInfo;
@@ -28,6 +30,7 @@ export function PrayerCard({
   onIncrement,
 }: PrayerCardProps) {
   const colors = useColors();
+  const { t, isRTL } = useTranslation();
   const scaleDecrement = useRef(new Animated.Value(1)).current;
   const scaleIncrement = useRef(new Animated.Value(1)).current;
   const countFlash = useRef(new Animated.Value(1)).current;
@@ -37,6 +40,12 @@ export function PrayerCard({
   const percent = initialCount > 0 ? (completed / initialCount) * 100 : 100;
   const isComplete = remaining === 0;
   const progressWidth = Math.min(100, percent);
+
+  const prayerNameKey = prayer.key as TranslationKey;
+  const timeLabelKeyMap: Record<string, TranslationKey> = {
+    fajar: "dawn", zohar: "noon", asar: "afternoon", maghrib: "sunset", isha: "night", witr: "night",
+  };
+  const timeLabelKey = timeLabelKeyMap[prayer.key];
 
   useEffect(() => {
     if (prevRemaining.current !== remaining) {
@@ -59,6 +68,8 @@ export function PrayerCard({
     callback();
   }
 
+  const typeKey = prayer.type === "Farz" ? "farz" : "wajib";
+
   return (
     <View
       style={[
@@ -75,21 +86,21 @@ export function PrayerCard({
         },
       ]}
     >
-      <View style={styles.body}>
-        <View style={styles.leftSection}>
+      <View style={[styles.body, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+        <View style={[styles.leftSection, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
           <View style={[styles.prayerIconBg, { backgroundColor: prayer.color + "22" }]}>
             <View style={[styles.prayerDot, { backgroundColor: prayer.color }]} />
           </View>
-          <View>
-            <Text style={[styles.prayerName, { color: colors.foreground }]}>
-              {prayer.name}
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.prayerName, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
+              {t(prayerNameKey)}
             </Text>
-            <Text style={[styles.arabicRow, { color: colors.mutedForeground }]}>
+            <Text style={[styles.arabicRow, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
               <Text style={styles.arabicName}>{prayer.arabicName}</Text>
               {"  ·  "}
-              <Text>{prayer.rakaat} {prayer.type}</Text>
+              <Text>{prayer.rakaat} {t(typeKey as TranslationKey)}</Text>
               {"  ·  "}
-              <Text>{prayer.timeLabel}</Text>
+              <Text>{timeLabelKey ? t(timeLabelKey) : prayer.timeLabel}</Text>
             </Text>
           </View>
         </View>
@@ -98,10 +109,10 @@ export function PrayerCard({
           {isComplete ? (
             <View style={[styles.completedBadge, { backgroundColor: colors.goldLight }]}>
               <Feather name="check-circle" size={13} color={colors.gold} />
-              <Text style={[styles.completedText, { color: colors.gold }]}>Complete</Text>
+              <Text style={[styles.completedText, { color: colors.gold }]}>{t("complete")}</Text>
             </View>
           ) : (
-            <View style={styles.controls}>
+            <View style={[styles.controls, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
               <Animated.View style={{ transform: [{ scale: scaleIncrement }] }}>
                 <Pressable
                   onPress={() => animatePress(scaleIncrement, onIncrement)}
@@ -148,8 +159,8 @@ export function PrayerCard({
       </View>
 
       {!isComplete && (
-        <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>
-          {Math.round(percent)}% done · {completed.toLocaleString()} completed
+        <Text style={[styles.progressLabel, { color: colors.mutedForeground, textAlign: isRTL ? "left" : "right" }]}>
+          {Math.round(percent)}% {t("donePct")} · {completed.toLocaleString()} {t("completed")}
         </Text>
       )}
     </View>
@@ -166,16 +177,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   body: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 12,
+    gap: 8,
   },
   leftSection: {
-    flexDirection: "row",
     alignItems: "center",
     gap: 12,
     flex: 1,
+    minWidth: 0,
   },
   prayerIconBg: {
     width: 36,
@@ -183,6 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
   prayerDot: {
     width: 10,
@@ -204,11 +216,11 @@ const styles = StyleSheet.create({
   },
   rightSection: {
     alignItems: "flex-end",
+    flexShrink: 0,
   },
   controls: {
-    flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 8,
   },
   adjBtn: {
     width: 30,
@@ -227,7 +239,7 @@ const styles = StyleSheet.create({
   count: {
     fontSize: 20,
     fontFamily: "Inter_700Bold",
-    minWidth: 52,
+    minWidth: 48,
     textAlign: "center",
   },
   completedBadge: {
@@ -255,6 +267,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Inter_400Regular",
     marginTop: 5,
-    textAlign: "right",
   },
 });

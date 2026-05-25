@@ -15,6 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppProvider } from "@/context/AppContext";
+import { LocaleProvider } from "@/context/LocaleContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -42,16 +43,18 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
-              <AppProvider>
-                <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="index" options={{ headerShown: false }} />
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                  <Stack.Screen
-                    name="onboarding"
-                    options={{ headerShown: false, gestureEnabled: false, animation: "fade" }}
-                  />
-                </Stack>
-              </AppProvider>
+              <LocaleProvider>
+                <AppProvider>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="index" options={{ headerShown: false }} />
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen
+                      name="onboarding"
+                      options={{ headerShown: false, gestureEnabled: false, animation: "fade" }}
+                    />
+                  </Stack>
+                </AppProvider>
+              </LocaleProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

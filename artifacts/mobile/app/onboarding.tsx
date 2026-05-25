@@ -4,7 +4,6 @@ import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Animated,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,13 +12,14 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useApp } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
+import { useLayout } from "@/hooks/useLayout";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { UserProfile } from "@/utils/calculations";
-
-const { width } = Dimensions.get("window");
 
 type Gender = "male" | "female";
 
@@ -28,7 +28,9 @@ type Step = (typeof STEPS)[number];
 
 export default function OnboardingScreen() {
   const colors = useColors();
-  const insets = useSafeAreaInsets();
+  const { topPad, insets } = useLayout();
+  const { t, isRTL } = useTranslation();
+  const { width } = useWindowDimensions();
   const { completeOnboarding } = useApp();
 
   const [step, setStep] = useState<Step>("welcome");
@@ -47,9 +49,7 @@ export default function OnboardingScreen() {
     : stepIndex / (STEPS.length - 1);
 
   function animateTransition(nextStep: Step) {
-    Animated.sequence([
-      Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-    ]).start(() => {
+    Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }).start(() => {
       setStep(nextStep);
       Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start();
     });
@@ -74,9 +74,7 @@ export default function OnboardingScreen() {
     if (step === "pubertyAge") return animateTransition("gender");
     if (step === "currentAge") return animateTransition("pubertyAge");
     if (step === "menstruation") return animateTransition("currentAge");
-    if (step === "summary") {
-      return animateTransition(gender === "female" ? "menstruation" : "currentAge");
-    }
+    if (step === "summary") return animateTransition(gender === "female" ? "menstruation" : "currentAge");
   }
 
   async function handleFinish() {
@@ -108,38 +106,45 @@ export default function OnboardingScreen() {
     return true;
   }
 
-  const s = styles(colors);
+  const rootPaddingTop = topPad;
+  const footerPaddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 16);
 
   return (
-    <View style={[s.root, { paddingTop: insets.top + (Platform.OS === "web" ? 67 : 0), paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0) }]}>
+    <View style={[s.root, { backgroundColor: colors.background, paddingTop: rootPaddingTop }]}>
       {step !== "welcome" && (
-        <View style={s.header}>
-          <Pressable onPress={goBack} style={s.backBtn}>
-            <Feather name="arrow-left" size={20} color={colors.foreground} />
+        <View style={[s.header, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+          <Pressable onPress={goBack} style={[s.backBtn, { backgroundColor: colors.card }]}>
+            <Feather name={isRTL ? "arrow-right" : "arrow-left"} size={20} color={colors.foreground} />
           </Pressable>
-          <View style={s.progressTrack}>
-            <View style={[s.progressFill, { width: `${Math.min(100, progress * 100)}%` as any }]} />
+          <View style={[s.progressTrack, { backgroundColor: colors.muted }]}>
+            <View style={[s.progressFill, { width: `${Math.min(100, progress * 100)}%` as any, backgroundColor: colors.emerald }]} />
           </View>
         </View>
       )}
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={s.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <Animated.View style={[s.content, { opacity: fadeAnim }]}>
 
             {step === "welcome" && (
               <View style={s.stepContainer}>
-                <View style={s.iconCircle}>
+                <View style={[s.iconCircle, { backgroundColor: colors.emeraldLight }]}>
                   <Text style={s.iconEmoji}>🌙</Text>
                 </View>
-                <Text style={s.title}>Qaza Namaz{"\n"}Tracker</Text>
-                <Text style={s.subtitle}>
-                  Calculate your missed prayers (Qaza-e-Umri) and track your journey to completing them, one prayer at a time.
+                <Text style={[s.title, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
+                  {t("welcomeTitle")}
                 </Text>
-                <View style={[s.infoCard, { backgroundColor: colors.goldLight }]}>
+                <Text style={[s.subtitle, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
+                  {t("welcomeDesc")}
+                </Text>
+                <View style={[s.infoCard, { backgroundColor: colors.goldLight, flexDirection: isRTL ? "row-reverse" : "row" }]}>
                   <Feather name="info" size={14} color={colors.gold} style={{ marginTop: 1 }} />
-                  <Text style={[s.infoText, { color: colors.gold }]}>
-                    All data stays private on your device. We'll ask a few questions to calculate your Qaza count.
+                  <Text style={[s.infoText, { color: colors.gold, textAlign: isRTL ? "right" : "left" }]}>
+                    {t("privacyNote")}
                   </Text>
                 </View>
               </View>
@@ -147,9 +152,9 @@ export default function OnboardingScreen() {
 
             {step === "gender" && (
               <View style={s.stepContainer}>
-                <Text style={s.stepLabel}>Step 1</Text>
-                <Text style={s.title}>Your Gender</Text>
-                <Text style={s.subtitle}>This helps calculate menstruation days for female users.</Text>
+                <Text style={[s.stepLabel, { color: colors.gold, textAlign: isRTL ? "right" : "left" }]}>{t("step1")}</Text>
+                <Text style={[s.title, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>{t("genderTitle")}</Text>
+                <Text style={[s.subtitle, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>{t("genderDesc")}</Text>
                 <View style={s.optionsRow}>
                   {(["male", "female"] as Gender[]).map((g) => (
                     <Pressable
@@ -166,7 +171,7 @@ export default function OnboardingScreen() {
                     >
                       <Text style={s.optionIcon}>{g === "male" ? "👨" : "👩"}</Text>
                       <Text style={[s.optionLabel, { color: gender === g ? colors.emerald : colors.foreground }]}>
-                        {g === "male" ? "Male" : "Female"}
+                        {g === "male" ? t("male") : t("female")}
                       </Text>
                     </Pressable>
                   ))}
@@ -176,15 +181,15 @@ export default function OnboardingScreen() {
 
             {step === "pubertyAge" && (
               <View style={s.stepContainer}>
-                <Text style={s.stepLabel}>Step 2</Text>
-                <Text style={s.title}>Age of Puberty</Text>
-                <Text style={s.subtitle}>
-                  Approximately when did you reach Bulooghat (puberty)?
-                  {"\n"}Common ages: {gender === "female" ? "11–14" : "13–16"} years.
+                <Text style={[s.stepLabel, { color: colors.gold, textAlign: isRTL ? "right" : "left" }]}>{t("step2")}</Text>
+                <Text style={[s.title, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>{t("pubertyTitle")}</Text>
+                <Text style={[s.subtitle, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
+                  {t("pubertyDesc")}
+                  {"\n"}{t("pubertyHint")} {gender === "female" ? "11–14" : "13–16"} {t("years")}.
                 </Text>
-                <View style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: isRTL ? "row-reverse" : "row" }]}>
                   <TextInput
-                    style={[s.input, { color: colors.foreground }]}
+                    style={[s.input, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}
                     value={pubertyAge}
                     onChangeText={setPubertyAge}
                     keyboardType="number-pad"
@@ -192,21 +197,19 @@ export default function OnboardingScreen() {
                     placeholderTextColor={colors.mutedForeground}
                     maxLength={2}
                   />
-                  <Text style={[s.inputSuffix, { color: colors.mutedForeground }]}>years old</Text>
+                  <Text style={[s.inputSuffix, { color: colors.mutedForeground }]}>{t("yearsOld")}</Text>
                 </View>
               </View>
             )}
 
             {step === "currentAge" && (
               <View style={s.stepContainer}>
-                <Text style={s.stepLabel}>Step 3</Text>
-                <Text style={s.title}>Your Current Age</Text>
-                <Text style={s.subtitle}>
-                  How old are you today?
-                </Text>
-                <View style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[s.stepLabel, { color: colors.gold, textAlign: isRTL ? "right" : "left" }]}>{t("step3")}</Text>
+                <Text style={[s.title, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>{t("currentAgeTitle")}</Text>
+                <Text style={[s.subtitle, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>{t("currentAgeDesc")}</Text>
+                <View style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: isRTL ? "row-reverse" : "row" }]}>
                   <TextInput
-                    style={[s.input, { color: colors.foreground }]}
+                    style={[s.input, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}
                     value={currentAge}
                     onChangeText={setCurrentAge}
                     keyboardType="number-pad"
@@ -215,11 +218,11 @@ export default function OnboardingScreen() {
                     maxLength={3}
                     autoFocus
                   />
-                  <Text style={[s.inputSuffix, { color: colors.mutedForeground }]}>years old</Text>
+                  <Text style={[s.inputSuffix, { color: colors.mutedForeground }]}>{t("yearsOld")}</Text>
                 </View>
                 {currentAge && !canProceed() && (
-                  <Text style={[s.errorText, { color: colors.destructive }]}>
-                    Current age must be greater than puberty age ({pubertyAge}).
+                  <Text style={[s.errorText, { color: colors.destructive, textAlign: isRTL ? "right" : "left" }]}>
+                    {t("currentAgeError")} ({pubertyAge}).
                   </Text>
                 )}
               </View>
@@ -227,15 +230,14 @@ export default function OnboardingScreen() {
 
             {step === "menstruation" && (
               <View style={s.stepContainer}>
-                <Text style={s.stepLabel}>Step 4</Text>
-                <Text style={s.title}>Menstruation Days</Text>
-                <Text style={s.subtitle}>
-                  How many days per month do you typically experience menstruation (Haiz)?
-                  {"\n"}These days will be deducted from your Qaza count.
+                <Text style={[s.stepLabel, { color: colors.gold, textAlign: isRTL ? "right" : "left" }]}>{t("step4")}</Text>
+                <Text style={[s.title, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>{t("mensTitle")}</Text>
+                <Text style={[s.subtitle, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
+                  {t("mensDesc")}
                 </Text>
-                <View style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: isRTL ? "row-reverse" : "row" }]}>
                   <TextInput
-                    style={[s.input, { color: colors.foreground }]}
+                    style={[s.input, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}
                     value={mensDays}
                     onChangeText={setMensDays}
                     keyboardType="number-pad"
@@ -244,12 +246,12 @@ export default function OnboardingScreen() {
                     maxLength={2}
                     autoFocus
                   />
-                  <Text style={[s.inputSuffix, { color: colors.mutedForeground }]}>days / month</Text>
+                  <Text style={[s.inputSuffix, { color: colors.mutedForeground }]}>{t("daysPerMonth")}</Text>
                 </View>
-                <View style={[s.infoCard, { backgroundColor: colors.emeraldLight }]}>
+                <View style={[s.infoCard, { backgroundColor: colors.emeraldLight, flexDirection: isRTL ? "row-reverse" : "row" }]}>
                   <Feather name="info" size={14} color={colors.emerald} style={{ marginTop: 1 }} />
-                  <Text style={[s.infoText, { color: colors.emerald }]}>
-                    During menstruation, Salah is not obligatory. These days are excluded from your Qaza calculation.
+                  <Text style={[s.infoText, { color: colors.emerald, textAlign: isRTL ? "right" : "left" }]}>
+                    {t("mensInfo")}
                   </Text>
                 </View>
               </View>
@@ -257,19 +259,23 @@ export default function OnboardingScreen() {
 
             {step === "summary" && (
               <View style={s.stepContainer}>
-                <Text style={s.stepLabel}>Summary</Text>
-                <Text style={s.title}>Your Qaza{"\n"}Calculation</Text>
+                <Text style={[s.stepLabel, { color: colors.gold, textAlign: isRTL ? "right" : "left" }]}>{t("summaryStep")}</Text>
+                <Text style={[s.title, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
+                  {t("summaryTitle")}
+                </Text>
                 <SummaryCard
                   gender={gender}
                   pubertyAge={parseInt(pubertyAge, 10) || 14}
                   currentAge={parseInt(currentAge, 10) || 25}
                   mensDays={gender === "female" ? parseInt(mensDays, 10) || 6 : 0}
                   colors={colors}
+                  isRTL={isRTL}
+                  t={t}
                 />
-                <View style={[s.infoCard, { backgroundColor: colors.goldLight }]}>
+                <View style={[s.infoCard, { backgroundColor: colors.goldLight, flexDirection: isRTL ? "row-reverse" : "row" }]}>
                   <Feather name="star" size={14} color={colors.gold} style={{ marginTop: 1 }} />
-                  <Text style={[s.infoText, { color: colors.gold }]}>
-                    May Allah make it easy for you to complete your Qaza prayers. Take it one prayer at a time.
+                  <Text style={[s.infoText, { color: colors.gold, textAlign: isRTL ? "right" : "left" }]}>
+                    {t("duaText")}
                   </Text>
                 </View>
               </View>
@@ -279,44 +285,52 @@ export default function OnboardingScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <View style={[s.footer, { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 16) }]}>
+      <View style={[s.footer, { backgroundColor: colors.background, paddingBottom: footerPaddingBottom }]}>
         <Pressable
           onPress={goNext}
           disabled={!canProceed() || isLoading}
           style={[
             s.primaryBtn,
-            {
-              backgroundColor: canProceed() && !isLoading ? colors.emerald : colors.muted,
-            },
+            { backgroundColor: canProceed() && !isLoading ? colors.emerald : colors.muted },
           ]}
         >
           <Text style={[s.primaryBtnText, { color: canProceed() && !isLoading ? "#FFFFFF" : colors.mutedForeground }]}>
-            {step === "summary" ? "Start Tracking" : "Continue"}
+            {step === "summary" ? t("startTracking") : t("continue")}
           </Text>
-          {!isLoading && <Feather name="arrow-right" size={18} color={canProceed() ? "#FFFFFF" : colors.mutedForeground} />}
+          {!isLoading && (
+            <Feather
+              name={isRTL ? "arrow-left" : "arrow-right"}
+              size={18}
+              color={canProceed() ? "#FFFFFF" : colors.mutedForeground}
+            />
+          )}
         </Pressable>
       </View>
     </View>
   );
 }
 
-function SummaryCard({ gender, pubertyAge, currentAge, mensDays, colors }: {
+function SummaryCard({
+  gender, pubertyAge, currentAge, mensDays, colors, isRTL, t,
+}: {
   gender: Gender;
   pubertyAge: number;
   currentAge: number;
   mensDays: number;
   colors: ReturnType<typeof useColors>;
+  isRTL: boolean;
+  t: (key: any) => string;
 }) {
   const lapsedYears = Math.max(0, currentAge - pubertyAge);
   const totalDays = Math.round(lapsedYears * 365.25);
   const mensDaysTotal = gender === "female" ? Math.round(mensDays * 12 * lapsedYears) : 0;
   const effectiveDays = Math.max(0, totalDays - mensDaysTotal);
 
-  const rows = [
-    { label: "Years of Qaza", value: `${lapsedYears} years` },
-    { label: "Total Days", value: totalDays.toLocaleString() },
-    ...(gender === "female" ? [{ label: "Menstruation Days Deducted", value: mensDaysTotal.toLocaleString() }] : []),
-    { label: "Prayer Days to Make Up", value: effectiveDays.toLocaleString(), highlight: true },
+  const rows: { label: string; value: string; highlight?: boolean }[] = [
+    { label: t("yearsOfQaza"), value: `${lapsedYears} ${t("years")}` },
+    { label: t("totalDays"), value: totalDays.toLocaleString() },
+    ...(gender === "female" ? [{ label: t("mensDaysDeducted"), value: mensDaysTotal.toLocaleString() }] : []),
+    { label: t("prayerDaysToMakeUp"), value: effectiveDays.toLocaleString(), highlight: true },
   ];
 
   return (
@@ -326,6 +340,7 @@ function SummaryCard({ gender, pubertyAge, currentAge, mensDays, colors }: {
           key={row.label}
           style={[
             summaryStyles.row,
+            { flexDirection: isRTL ? "row-reverse" : "row" },
             {
               backgroundColor: row.highlight ? colors.emeraldLight : colors.card,
               borderColor: row.highlight ? colors.emerald : colors.border,
@@ -333,7 +348,9 @@ function SummaryCard({ gender, pubertyAge, currentAge, mensDays, colors }: {
             },
           ]}
         >
-          <Text style={[summaryStyles.rowLabel, { color: colors.mutedForeground }]}>{row.label}</Text>
+          <Text style={[summaryStyles.rowLabel, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
+            {row.label}
+          </Text>
           <Text style={[summaryStyles.rowValue, { color: row.highlight ? colors.emerald : colors.foreground }]}>
             {row.value}
           </Text>
@@ -345,177 +362,56 @@ function SummaryCard({ gender, pubertyAge, currentAge, mensDays, colors }: {
 
 const summaryStyles = StyleSheet.create({
   row: {
-    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 12,
   },
-  rowLabel: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    flex: 1,
-  },
-  rowValue: {
-    fontSize: 15,
-    fontFamily: "Inter_700Bold",
-  },
+  rowLabel: { fontSize: 14, fontFamily: "Inter_400Regular", flex: 1 },
+  rowValue: { fontSize: 15, fontFamily: "Inter_700Bold" },
 });
 
-const styles = (colors: ReturnType<typeof useColors>) =>
-  StyleSheet.create({
-    root: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: 8,
-      gap: 12,
-    },
-    backBtn: {
-      width: 36,
-      height: 36,
-      borderRadius: 10,
-      backgroundColor: colors.card,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    progressTrack: {
-      flex: 1,
-      height: 4,
-      backgroundColor: colors.muted,
-      borderRadius: 2,
-      overflow: "hidden",
-    },
-    progressFill: {
-      height: 4,
-      backgroundColor: colors.emerald,
-      borderRadius: 2,
-    },
-    scroll: {
-      flexGrow: 1,
-      paddingHorizontal: 24,
-      paddingBottom: 120,
-    },
-    content: {
-      flex: 1,
-    },
-    stepContainer: {
-      paddingTop: 32,
-    },
-    stepLabel: {
-      fontSize: 12,
-      fontFamily: "Inter_600SemiBold",
-      color: colors.gold,
-      letterSpacing: 1.2,
-      textTransform: "uppercase",
-      marginBottom: 8,
-    },
-    title: {
-      fontSize: 32,
-      fontFamily: "Inter_700Bold",
-      color: colors.foreground,
-      lineHeight: 40,
-      marginBottom: 12,
-    },
-    subtitle: {
-      fontSize: 15,
-      fontFamily: "Inter_400Regular",
-      color: colors.mutedForeground,
-      lineHeight: 22,
-      marginBottom: 28,
-    },
-    iconCircle: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: colors.emeraldLight,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 24,
-    },
-    iconEmoji: {
-      fontSize: 36,
-    },
-    optionsRow: {
-      flexDirection: "row",
-      gap: 12,
-    },
-    optionCard: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 28,
-      borderRadius: 16,
-      gap: 10,
-    },
-    optionIcon: {
-      fontSize: 32,
-    },
-    optionLabel: {
-      fontSize: 16,
-      fontFamily: "Inter_600SemiBold",
-    },
-    inputCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      borderRadius: 16,
-      borderWidth: 1.5,
-      paddingHorizontal: 20,
-      paddingVertical: 4,
-    },
-    input: {
-      flex: 1,
-      fontSize: 40,
-      fontFamily: "Inter_700Bold",
-      paddingVertical: 16,
-    },
-    inputSuffix: {
-      fontSize: 14,
-      fontFamily: "Inter_400Regular",
-    },
-    infoCard: {
-      flexDirection: "row",
-      borderRadius: 12,
-      padding: 14,
-      gap: 10,
-      marginTop: 16,
-    },
-    infoText: {
-      flex: 1,
-      fontSize: 13,
-      fontFamily: "Inter_400Regular",
-      lineHeight: 20,
-    },
-    errorText: {
-      fontSize: 13,
-      fontFamily: "Inter_400Regular",
-      marginTop: 8,
-    },
-    footer: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      paddingHorizontal: 24,
-      paddingTop: 12,
-      backgroundColor: colors.background,
-    },
-    primaryBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      height: 54,
-      borderRadius: 16,
-      gap: 8,
-    },
-    primaryBtnText: {
-      fontSize: 16,
-      fontFamily: "Inter_600SemiBold",
-    },
-  });
+const s = StyleSheet.create({
+  root: { flex: 1 },
+  header: {
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  backBtn: {
+    width: 36, height: 36, borderRadius: 10,
+    alignItems: "center", justifyContent: "center",
+  },
+  progressTrack: { flex: 1, height: 4, borderRadius: 2, overflow: "hidden" },
+  progressFill: { height: 4, borderRadius: 2 },
+  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingBottom: 120 },
+  content: { flex: 1 },
+  stepContainer: { paddingTop: 32 },
+  stepLabel: {
+    fontSize: 12, fontFamily: "Inter_600SemiBold",
+    letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8,
+  },
+  title: { fontSize: 32, fontFamily: "Inter_700Bold", lineHeight: 40, marginBottom: 12 },
+  subtitle: { fontSize: 15, fontFamily: "Inter_400Regular", lineHeight: 22, marginBottom: 28 },
+  iconCircle: { width: 80, height: 80, borderRadius: 40, alignItems: "center", justifyContent: "center", marginBottom: 24 },
+  iconEmoji: { fontSize: 36 },
+  optionsRow: { flexDirection: "row", gap: 12 },
+  optionCard: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 28, borderRadius: 16, gap: 10 },
+  optionIcon: { fontSize: 32 },
+  optionLabel: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
+  inputCard: { alignItems: "center", borderRadius: 16, borderWidth: 1.5, paddingHorizontal: 20, paddingVertical: 4 },
+  input: { flex: 1, fontSize: 40, fontFamily: "Inter_700Bold", paddingVertical: 16 },
+  inputSuffix: { fontSize: 14, fontFamily: "Inter_400Regular" },
+  infoCard: { borderRadius: 12, padding: 14, gap: 10, marginTop: 16 },
+  infoText: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 20 },
+  errorText: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 8 },
+  footer: {
+    position: "absolute", bottom: 0, left: 0, right: 0,
+    paddingHorizontal: 24, paddingTop: 12,
+  },
+  primaryBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 54, borderRadius: 16, gap: 8 },
+  primaryBtnText: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
+});

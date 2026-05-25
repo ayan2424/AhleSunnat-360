@@ -10,12 +10,13 @@ import {
   Text,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MilestoneModal } from "@/components/MilestoneModal";
 import { PrayerCard } from "@/components/PrayerCard";
 import { ProgressRing } from "@/components/ProgressRing";
 import { useApp } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
+import { useLayout } from "@/hooks/useLayout";
+import { useTranslation } from "@/hooks/useTranslation";
 import { PRAYERS, getCompletionPercent, getTotalRemaining } from "@/utils/calculations";
 import { getDailyHadith } from "@/utils/hadiths";
 import { getNextMilestone } from "@/utils/milestones";
@@ -25,7 +26,8 @@ const hadith = getDailyHadith();
 
 export default function TrackerScreen() {
   const colors = useColors();
-  const insets = useSafeAreaInsets();
+  const { topPad, scrollBottomFab, fabBottom, isSmall } = useLayout();
+  const { t, isRTL } = useTranslation();
   const {
     currentCounts, initialCounts, totalCompleted,
     streak, pendingMilestone, dismissMilestone,
@@ -34,9 +36,6 @@ export default function TrackerScreen() {
 
   const quickLogScale = useRef(new Animated.Value(1)).current;
   const [hadithExpanded, setHadithExpanded] = useState(false);
-
-  const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const bottomPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
   const totalRemaining = currentCounts ? getTotalRemaining(currentCounts) : 0;
   const overallPercent = currentCounts && initialCounts
@@ -64,13 +63,20 @@ export default function TrackerScreen() {
       <MilestoneModal milestone={pendingMilestone} onDismiss={dismissMilestone} />
 
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingTop: topPad + 12, paddingBottom: bottomPad + 110 }]}
+        contentContainerStyle={[
+          styles.scroll,
+          { paddingTop: topPad + 12, paddingBottom: scrollBottomFab },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.topRow}>
-          <View>
-            <Text style={[styles.greeting, { color: colors.mutedForeground }]}>السلام علیکم</Text>
-            <Text style={[styles.pageTitle, { color: colors.foreground }]}>Daily Tracker</Text>
+        <View style={[styles.topRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+          <View style={isRTL ? { alignItems: "flex-end" } : undefined}>
+            <Text style={[styles.greeting, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
+              السلام علیکم
+            </Text>
+            <Text style={[styles.pageTitle, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
+              {t("dailyTracker")}
+            </Text>
           </View>
           {streak.currentStreak > 0 && (
             <View style={[styles.streakBadge, {
@@ -82,55 +88,55 @@ export default function TrackerScreen() {
                 {streak.currentStreak}
               </Text>
               <Text style={[styles.streakLabel, { color: streakActive ? colors.gold : colors.mutedForeground }]}>
-                day{streak.currentStreak !== 1 ? "s" : ""}
+                {t("dayStreak")}
               </Text>
             </View>
           )}
         </View>
 
-        <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: isRTL ? "row-reverse" : "row" }]}>
           <ProgressRing
             percent={overallPercent}
-            size={96}
-            strokeWidth={9}
+            size={isSmall ? 80 : 96}
+            strokeWidth={isSmall ? 8 : 9}
             label={`${Math.round(overallPercent)}%`}
-            sublabel="done"
+            sublabel={t("done")}
           />
           <View style={styles.heroRight}>
-            <View style={styles.heroStats}>
+            <View style={[styles.heroStats, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
               <View style={styles.heroStat}>
                 <Text style={[styles.heroVal, { color: colors.foreground }]}>
                   {totalCompleted.toLocaleString()}
                 </Text>
-                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>completed</Text>
+                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>{t("completed")}</Text>
               </View>
               <View style={[styles.heroDivider, { backgroundColor: colors.border }]} />
               <View style={styles.heroStat}>
                 <Text style={[styles.heroVal, { color: colors.foreground }]}>
                   {totalRemaining.toLocaleString()}
                 </Text>
-                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>remaining</Text>
+                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>{t("remaining")}</Text>
               </View>
               <View style={[styles.heroDivider, { backgroundColor: colors.border }]} />
               <View style={styles.heroStat}>
                 <Text style={[styles.heroVal, { color: colors.foreground }]}>
                   {streak.longestStreak}
                 </Text>
-                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>best streak</Text>
+                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>{t("bestStreak")}</Text>
               </View>
             </View>
             {!allDone && nextMilestone && daysUntilNext !== null && (
-              <View style={[styles.nextTarget, { backgroundColor: colors.emeraldLight }]}>
+              <View style={[styles.nextTarget, { backgroundColor: colors.emeraldLight, flexDirection: isRTL ? "row-reverse" : "row" }]}>
                 <Feather name="target" size={11} color={colors.emerald} />
-                <Text style={[styles.nextTargetText, { color: colors.emerald }]}>
-                  {daysUntilNext.toLocaleString()} to {nextMilestone.emoji} {nextMilestone.title}
+                <Text style={[styles.nextTargetText, { color: colors.emerald, textAlign: isRTL ? "right" : "left" }]}>
+                  {daysUntilNext.toLocaleString()} {t("nextTo")} {nextMilestone.emoji} {nextMilestone.title}
                 </Text>
               </View>
             )}
             {allDone && (
-              <View style={[styles.nextTarget, { backgroundColor: colors.goldLight }]}>
+              <View style={[styles.nextTarget, { backgroundColor: colors.goldLight, flexDirection: isRTL ? "row-reverse" : "row" }]}>
                 <Text style={{ fontSize: 11 }}>🎉</Text>
-                <Text style={[styles.nextTargetText, { color: colors.gold }]}>All Qaza completed!</Text>
+                <Text style={[styles.nextTargetText, { color: colors.gold }]}>{t("allDoneChip")}</Text>
               </View>
             )}
           </View>
@@ -140,27 +146,27 @@ export default function TrackerScreen() {
           onPress={() => setHadithExpanded(!hadithExpanded)}
           style={[styles.hadithCard, { backgroundColor: colors.card, borderColor: colors.goldLight }]}
         >
-          <View style={styles.hadithHeader}>
+          <View style={[styles.hadithHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             <View style={[styles.hadithDot, { backgroundColor: colors.gold }]} />
             <Text style={[styles.hadithSource, { color: colors.gold }]}>{hadith.source}</Text>
             <Feather
               name={hadithExpanded ? "chevron-up" : "chevron-down"}
               size={13}
               color={colors.gold}
-              style={{ marginLeft: "auto" }}
+              style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }}
             />
           </View>
           <Text
-            style={[styles.hadithText, { color: colors.foreground }]}
+            style={[styles.hadithText, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}
             numberOfLines={hadithExpanded ? undefined : 2}
           >
             "{hadith.text}"
           </Text>
         </Pressable>
 
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Prayers</Text>
-          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>✓ log · − undo</Text>
+        <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("prayers")}</Text>
+          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>{t("logAndUndo")}</Text>
         </View>
 
         {PRAYERS.map((prayer) => (
@@ -176,21 +182,21 @@ export default function TrackerScreen() {
       </ScrollView>
 
       {!allDone && (
-        <View style={[styles.fab, { paddingBottom: bottomPad + 12, backgroundColor: colors.background }]}>
+        <View style={[styles.fab, { bottom: fabBottom, paddingBottom: 12 }]}>
           <Animated.View style={{ transform: [{ scale: quickLogScale }], width: "100%" }}>
             <Pressable
               onPress={handleQuickLog}
               style={[styles.quickLogBtn, { backgroundColor: colors.emerald }]}
             >
               <Feather name="check-square" size={18} color="#FFFFFF" />
-              <Text style={styles.quickLogText}>Quick Log Full Day</Text>
+              <Text style={styles.quickLogText}>{t("quickLogFullDay")}</Text>
               <View style={styles.quickLogPill}>
-                <Text style={styles.quickLogPillText}>6 prayers</Text>
+                <Text style={styles.quickLogPillText}>{t("sixPrayers")}</Text>
               </View>
             </Pressable>
           </Animated.View>
           <Text style={[styles.fabHint, { color: colors.mutedForeground }]}>
-            Logs one Qaza for each of the 6 prayers
+            {t("logsOneQaza")}
           </Text>
         </View>
       )}
@@ -201,7 +207,11 @@ export default function TrackerScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { paddingHorizontal: 16 },
-  topRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 },
+  topRow: {
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
   greeting: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 2 },
   pageTitle: { fontSize: 24, fontFamily: "Inter_700Bold" },
   streakBadge: {
@@ -213,33 +223,34 @@ const styles = StyleSheet.create({
   streakLabel: { fontSize: 10, fontFamily: "Inter_400Regular" },
   heroCard: {
     borderRadius: 18, borderWidth: 1, padding: 16,
-    flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 12,
+    alignItems: "center", gap: 14, marginBottom: 12,
   },
   heroRight: { flex: 1, gap: 10 },
-  heroStats: { flexDirection: "row", alignItems: "center" },
+  heroStats: { alignItems: "center" },
   heroStat: { flex: 1, alignItems: "center" },
   heroVal: { fontSize: 18, fontFamily: "Inter_700Bold" },
-  heroLabel: { fontSize: 10, fontFamily: "Inter_400Regular", marginTop: 1 },
+  heroLabel: { fontSize: 10, fontFamily: "Inter_400Regular", marginTop: 1, textAlign: "center" },
   heroDivider: { width: 1, height: 26 },
   nextTarget: {
-    flexDirection: "row", alignItems: "center", gap: 5,
+    alignItems: "center", gap: 5,
     paddingHorizontal: 9, paddingVertical: 5, borderRadius: 9,
   },
   nextTargetText: { fontSize: 11, fontFamily: "Inter_600SemiBold", flex: 1 },
   hadithCard: { borderRadius: 14, padding: 13, marginBottom: 16, borderWidth: 1, gap: 5 },
-  hadithHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
+  hadithHeader: { alignItems: "center", gap: 6 },
   hadithDot: { width: 6, height: 6, borderRadius: 3 },
   hadithSource: { fontSize: 10, fontFamily: "Inter_600SemiBold", letterSpacing: 0.5, textTransform: "uppercase" },
   hadithText: { fontSize: 12.5, fontFamily: "Inter_400Regular", lineHeight: 19, fontStyle: "italic" },
   sectionHeader: {
-    flexDirection: "row", alignItems: "baseline",
+    alignItems: "baseline",
     justifyContent: "space-between", marginBottom: 10,
   },
   sectionTitle: { fontSize: 17, fontFamily: "Inter_700Bold" },
   sectionHint: { fontSize: 11, fontFamily: "Inter_400Regular" },
   fab: {
-    position: "absolute", bottom: 0, left: 0, right: 0,
+    position: "absolute", left: 0, right: 0,
     paddingHorizontal: 16, paddingTop: 10, alignItems: "center",
+    backgroundColor: "transparent",
   },
   quickLogBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
