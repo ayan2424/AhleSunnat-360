@@ -16,6 +16,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppProvider } from "@/context/AppContext";
 import { LocaleProvider } from "@/context/LocaleContext";
+import { TasbihProvider } from "@/context/TasbihContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,6 +45,7 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <LocaleProvider>
+                <TasbihProvider>
                 <AppProvider>
                   <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -54,6 +56,7 @@ export default function RootLayout() {
                     />
                   </Stack>
                 </AppProvider>
+                </TasbihProvider>
               </LocaleProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>

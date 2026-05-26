@@ -1,0 +1,3 @@
+- [Translation system](translation-system.md) — all 11 languages typed as `typeof en`; adding new keys requires edits to all 11 language objects in translations.ts
+- [ProgressRing color prop](progress-ring-color.md) — added `color?` prop to ProgressRing component; falls back to `colors.gold` if not supplied
+- [Pre-existing TS errors](preexisting-ts-errors.md) — two pre-existing TS errors in onboarding.tsx and useColors.ts are known non-blocking issues

@@ -17,6 +17,14 @@ function NativeTabLayout() {
         <Icon sf={{ default: "moon.stars", selected: "moon.stars.fill" }} />
         <Label>{t("tabTracker" as any) ?? "Tracker"}</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="tasbih">
+        <Icon sf={{ default: "circlebadge.2", selected: "circlebadge.2.fill" }} />
+        <Label>{t("tasbih")}</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="duas">
+        <Icon sf={{ default: "hands.sparkles", selected: "hands.sparkles.fill" }} />
+        <Label>{t("azkar")}</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="progress">
         <Icon sf={{ default: "chart.bar", selected: "chart.bar.fill" }} />
         <Label>{t("tabProgress" as any) ?? "Progress"}</Label>
@@ -80,6 +88,30 @@ function ClassicTabLayout() {
               <SymbolView name="moon.stars" tintColor={color} size={24} />
             ) : (
               <Feather name="moon" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="tasbih"
+        options={{
+          title: t("tasbih"),
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="circlebadge.2" tintColor={color} size={24} />
+            ) : (
+              <Feather name="rotate-cw" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="duas"
+        options={{
+          title: t("azkar"),
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="hands.sparkles" tintColor={color} size={24} />
+            ) : (
+              <Feather name="book-open" size={22} color={color} />
             ),
         }}
       />

@@ -19,6 +19,7 @@ import { useLayout } from "@/hooks/useLayout";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PRAYERS, getCompletionPercent, getTotalRemaining } from "@/utils/calculations";
 import { getDailyHadith } from "@/utils/hadiths";
+import { formatHijri, getSpecialNights, toHijri } from "@/utils/hijri";
 import { getNextMilestone } from "@/utils/milestones";
 import { getStreakEmoji, isStreakActive } from "@/utils/streak";
 
@@ -36,6 +37,10 @@ export default function TrackerScreen() {
 
   const quickLogScale = useRef(new Animated.Value(1)).current;
   const [hadithExpanded, setHadithExpanded] = useState(false);
+
+  const hijri = toHijri();
+  const hijriLabel = formatHijri(hijri);
+  const specialNight = getSpecialNights(hijri);
 
   const totalRemaining = currentCounts ? getTotalRemaining(currentCounts) : 0;
   const overallPercent = currentCounts && initialCounts
@@ -77,6 +82,16 @@ export default function TrackerScreen() {
             <Text style={[styles.pageTitle, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
               {t("dailyTracker")}
             </Text>
+            <View style={[styles.hijriRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+              <View style={[styles.hijriChip, { backgroundColor: colors.goldLight }]}>
+                <Text style={[styles.hijriText, { color: colors.gold }]}>🌙 {hijriLabel}</Text>
+              </View>
+              {specialNight && (
+                <View style={[styles.hijriChip, { backgroundColor: colors.emeraldLight }]}>
+                  <Text style={[styles.hijriText, { color: colors.emerald }]}>{specialNight}</Text>
+                </View>
+              )}
+            </View>
           </View>
           {streak.currentStreak > 0 && (
             <View style={[styles.streakBadge, {
@@ -214,6 +229,9 @@ const styles = StyleSheet.create({
   },
   greeting: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 2 },
   pageTitle: { fontSize: 24, fontFamily: "Inter_700Bold" },
+  hijriRow: { flexWrap: "wrap", gap: 6, marginTop: 6 },
+  hijriChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  hijriText: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
   streakBadge: {
     flexDirection: "row", alignItems: "center", gap: 4,
     paddingHorizontal: 11, paddingVertical: 7, borderRadius: 13, borderWidth: 1.5,

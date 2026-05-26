@@ -9,6 +9,7 @@ interface ProgressRingProps {
   strokeWidth?: number;
   label?: string;
   sublabel?: string;
+  color?: string;
 }
 
 export function ProgressRing({
@@ -17,8 +18,10 @@ export function ProgressRing({
   strokeWidth = 10,
   label,
   sublabel,
+  color,
 }: ProgressRingProps) {
   const colors = useColors();
+  const ringColor = color ?? colors.gold;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percent / 100) * circumference;
@@ -39,7 +42,7 @@ export function ProgressRing({
           cx={center}
           cy={center}
           r={radius}
-          stroke={colors.gold}
+          stroke={ringColor}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={circumference}
