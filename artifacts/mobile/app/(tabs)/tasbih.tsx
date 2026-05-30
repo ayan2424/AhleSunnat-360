@@ -189,7 +189,7 @@ export default function TasbihScreen() {
             onPress={handleSetTarget}
           >
             <Text style={[styles.statVal, { color: preset.color }]}>{target}</Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Target</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t("target")}</Text>
           </Pressable>
         </View>
 
@@ -206,7 +206,7 @@ export default function TasbihScreen() {
 
         {/* All Presets Quick View */}
         <Text style={[styles.sectionTitle, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
-          All Dhikr Today
+          {t("allDhikrToday")}
         </Text>
         {TASBIH_PRESETS.map((p) => {
           const c = counts[p.id] ?? 0;
@@ -263,7 +263,7 @@ export default function TasbihScreen() {
         <View style={[styles.targetOverlay, { backgroundColor: "rgba(0,0,0,0.45)" }]}>
           <View style={[styles.targetSheet, { backgroundColor: colors.card }]}>
             <Text style={[styles.targetTitle, { color: colors.foreground }]}>
-              Set Target for {preset.transliteration}
+              {t("setTarget")} · {preset.transliteration}
             </Text>
             <TextInput
               style={[styles.targetInput, { color: colors.foreground, borderColor: preset.color }]}
@@ -278,7 +278,7 @@ export default function TasbihScreen() {
                 <Text style={{ color: colors.mutedForeground }}>{t("cancel")}</Text>
               </Pressable>
               <Pressable style={[styles.targetBtn, { backgroundColor: preset.color }]} onPress={confirmTarget}>
-                <Text style={{ color: "#FFF", fontFamily: "Inter_600SemiBold" }}>Set</Text>
+                <Text style={{ color: "#FFF", fontFamily: "Inter_600SemiBold" }}>{t("set")}</Text>
               </Pressable>
             </View>
           </View>

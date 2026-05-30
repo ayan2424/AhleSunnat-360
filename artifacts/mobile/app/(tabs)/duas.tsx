@@ -84,8 +84,8 @@ export default function DuasScreen() {
           {t("azkar")}
         </Text>
 
-        {/* Category Tabs */}
-        <View style={[styles.catRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+        {/* Category Tabs — 2×2 grid */}
+        <View style={styles.catGrid}>
           {DUA_CATEGORIES.map(({ key, icon }) => {
             const sel = key === category;
             return (
@@ -97,12 +97,15 @@ export default function DuasScreen() {
                   {
                     backgroundColor: sel ? colors.emerald : colors.card,
                     borderColor: sel ? colors.emerald : colors.border,
-                    flex: 1,
                   },
                 ]}
               >
                 <Text style={styles.catIcon}>{icon}</Text>
-                <Text style={[styles.catLabel, { color: sel ? "#FFF" : colors.mutedForeground }]}>
+                <Text
+                  style={[styles.catLabel, { color: sel ? "#FFF" : colors.mutedForeground }]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
                   {categoryLabels[key]}
                 </Text>
               </Pressable>
@@ -226,10 +229,10 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { paddingHorizontal: 16 },
   pageTitle: { fontSize: 24, fontFamily: "Inter_700Bold", marginBottom: 14 },
-  catRow: { gap: 6, marginBottom: 12 },
-  catBtn: { alignItems: "center", paddingVertical: 8, paddingHorizontal: 4, borderRadius: 12, borderWidth: 1, gap: 3 },
-  catIcon: { fontSize: 16 },
-  catLabel: { fontSize: 10, fontFamily: "Inter_600SemiBold", textAlign: "center" },
+  catGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
+  catBtn: { width: "48%", alignItems: "center", paddingVertical: 10, paddingHorizontal: 6, borderRadius: 12, borderWidth: 1, gap: 4 },
+  catIcon: { fontSize: 18 },
+  catLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", textAlign: "center", minWidth: 0 },
   progressRow: { borderRadius: 12, borderWidth: 1, padding: 12, marginBottom: 14, gap: 10, alignItems: "center" },
   progressText: { fontSize: 13, fontFamily: "Inter_600SemiBold", minWidth: 90 },
   progressTrack: { flex: 1, height: 6, borderRadius: 3, overflow: "hidden" },

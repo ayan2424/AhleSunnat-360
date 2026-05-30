@@ -25,6 +25,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "hands.sparkles", selected: "hands.sparkles.fill" }} />
         <Label>{t("azkar")}</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="calendar">
+        <Icon sf={{ default: "star.circle", selected: "star.circle.fill" }} />
+        <Label>{t("islamicCalendar" as any) ?? "Calendar"}</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="progress">
         <Icon sf={{ default: "chart.bar", selected: "chart.bar.fill" }} />
         <Label>{t("tabProgress" as any) ?? "Progress"}</Label>
@@ -112,6 +116,18 @@ function ClassicTabLayout() {
               <SymbolView name="hands.sparkles" tintColor={color} size={24} />
             ) : (
               <Feather name="book-open" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: t("islamicCalendar" as any) ?? "Calendar",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="star.circle" tintColor={color} size={24} />
+            ) : (
+              <Feather name="star" size={22} color={color} />
             ),
         }}
       />

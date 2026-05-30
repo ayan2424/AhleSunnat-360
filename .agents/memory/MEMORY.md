@@ -1,3 +1,4 @@
-- [Translation system](translation-system.md) — all 11 languages typed as `typeof en`; adding new keys requires edits to all 11 language objects in translations.ts
+- [Translation system](translation-system.md) — all 11 languages typed as `typeof en`; use python3 script with footerDua as unique anchor when adding new keys to all language objects
 - [ProgressRing color prop](progress-ring-color.md) — added `color?` prop to ProgressRing component; falls back to `colors.gold` if not supplied
-- [Pre-existing TS errors](preexisting-ts-errors.md) — two pre-existing TS errors in onboarding.tsx and useColors.ts are known non-blocking issues
+- [Pre-existing TS errors](preexisting-ts-errors.md) — two pre-existing TS errors in onboarding.tsx (route type) and useColors.ts (cast) are known non-blocking issues; do not fix them
+- [Hijri calendar utils](hijri-utils.md) — hijri.ts exports toHijri, fromHijri, hijriDaysInMonth, getEventsForDay, getEventsForMonth, ISLAMIC_EVENTS (41 events), EVENT_COLORS, EVENT_LABELS; getSpecialNights uses events array + Ramadan fallback

@@ -160,6 +160,11 @@ const en = {
   markDone: "Mark Done",
   allTime: "All Time",
   hijriDateLabel: "Hijri",
+  islamicCalendar: "Islamic Calendar",
+  allDhikrToday: "All Dhikr Today",
+  setTarget: "Set Target",
+  set: "Set",
+  target: "Target",
 };
 
 const ar: typeof en = {
@@ -293,6 +298,11 @@ const ar: typeof en = {
   markDone: "وضع علامة مكتمل",
   allTime: "مجموع كل الوقت",
   hijriDateLabel: "هجري",
+  islamicCalendar: "التقويم الإسلامي",
+  allDhikrToday: "كل الأذكار اليوم",
+  setTarget: "حدد الهدف",
+  set: "حدد",
+  target: "الهدف",
 };
 
 const ur: typeof en = {
@@ -426,6 +436,11 @@ const ur: typeof en = {
   markDone: "مکمل نشان کریں",
   allTime: "کل وقت",
   hijriDateLabel: "ہجری",
+  islamicCalendar: "اسلامی کیلنڈر",
+  allDhikrToday: "آج کے تمام اذکار",
+  setTarget: "ہدف مقرر کریں",
+  set: "مقرر",
+  target: "ہدف",
 };
 
 const tr: typeof en = {
@@ -559,6 +574,11 @@ const tr: typeof en = {
   markDone: "Tamamlandı Olarak İşaretle",
   allTime: "Tüm Zamanlar",
   hijriDateLabel: "Hicri",
+  islamicCalendar: "İslami Takvim",
+  allDhikrToday: "Bugünkü Tesbihler",
+  setTarget: "Hedef Belirle",
+  set: "Ayarla",
+  target: "Hedef",
 };
 
 const fr: typeof en = {
@@ -692,6 +712,11 @@ const fr: typeof en = {
   markDone: "Marquer comme fait",
   allTime: "Tout le temps",
   hijriDateLabel: "Hégire",
+  islamicCalendar: "Calendrier Islamique",
+  allDhikrToday: "Tous les dhikr du jour",
+  setTarget: "Définir l'objectif",
+  set: "Définir",
+  target: "Objectif",
 };
 
 const id: typeof en = {
@@ -825,6 +850,11 @@ const id: typeof en = {
   markDone: "Tandai Selesai",
   allTime: "Sepanjang Waktu",
   hijriDateLabel: "Hijri",
+  islamicCalendar: "Kalender Islam",
+  allDhikrToday: "Semua Zikir Hari Ini",
+  setTarget: "Tetapkan Sasaran",
+  set: "Tetap",
+  target: "Sasaran",
 };
 
 const rur: typeof en = {
@@ -958,6 +988,11 @@ const rur: typeof en = {
   markDone: "Mukammal mark karein",
   allTime: "Kul waqt",
   hijriDateLabel: "Hijri",
+  islamicCalendar: "Islamic Calendar",
+  allDhikrToday: "Aaj ke Tamam Azkar",
+  setTarget: "Target Muqarrar Karein",
+  set: "Muqarrar",
+  target: "Target",
 };
 
 const hi: typeof en = {
@@ -1091,6 +1126,11 @@ const hi: typeof en = {
   markDone: "पूर्ण चिह्नित करें",
   allTime: "सर्वकालिक",
   hijriDateLabel: "हिजरी",
+  islamicCalendar: "इस्लामी कैलेंडर",
+  allDhikrToday: "आज का सम्पूर्ण जाप",
+  setTarget: "लक्ष्य निर्धारित करें",
+  set: "सेट",
+  target: "लक्ष्य",
 };
 
 const fa: typeof en = {
@@ -1224,6 +1264,11 @@ const fa: typeof en = {
   markDone: "علامت‌گذاری انجام شده",
   allTime: "همه وقت",
   hijriDateLabel: "هجری",
+  islamicCalendar: "تقویم اسلامی",
+  allDhikrToday: "تمام اذکار امروز",
+  setTarget: "تعیین هدف",
+  set: "تعیین",
+  target: "هدف",
 };
 
 const bn: typeof en = {
@@ -1357,6 +1402,11 @@ const bn: typeof en = {
   markDone: "সম্পন্ন চিহ্নিত করুন",
   allTime: "সর্বমোট",
   hijriDateLabel: "হিজরি",
+  islamicCalendar: "ইসলামিক ক্যালেন্ডার",
+  allDhikrToday: "আজকের সব জিকির",
+  setTarget: "লক্ষ্য নির্ধারণ করুন",
+  set: "সেট",
+  target: "লক্ষ্য",
 };
 
 const ms: typeof en = {
@@ -1490,6 +1540,11 @@ const ms: typeof en = {
   markDone: "Tandakan Selesai",
   allTime: "Sepanjang Masa",
   hijriDateLabel: "Hijri",
+  islamicCalendar: "Kalender Islam",
+  allDhikrToday: "Semua Dzikir Hari Ini",
+  setTarget: "Tetapkan Target",
+  set: "Tetap",
+  target: "Target",
 };
 
 export const TRANSLATIONS = { en, ar, ur, rur, hi, fa, bn, ms, tr, fr, id };
