@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import {
   Animated,
   Platform,
@@ -12,6 +12,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import { HadithCarousel } from "@/components/HadithCarousel";
 import { MilestoneModal } from "@/components/MilestoneModal";
 import { PrayerCard } from "@/components/PrayerCard";
 import { ProgressRing } from "@/components/ProgressRing";
@@ -20,12 +21,10 @@ import { useColors } from "@/hooks/useColors";
 import { useLayout } from "@/hooks/useLayout";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PRAYERS, getCompletionPercent, getTotalRemaining } from "@/utils/calculations";
-import { getDailyHadith } from "@/utils/hadiths";
 import { formatHijri, getSpecialNights, toHijri } from "@/utils/hijri";
 import { getNextMilestone } from "@/utils/milestones";
 import { getStreakEmoji, isStreakActive } from "@/utils/streak";
 
-const hadith = getDailyHadith();
 
 export default function TrackerScreen() {
   const colors = useColors();
@@ -39,7 +38,6 @@ export default function TrackerScreen() {
   } = useApp();
 
   const quickLogScale = useRef(new Animated.Value(1)).current;
-  const [hadithExpanded, setHadithExpanded] = useState(false);
 
   const hijri = toHijri();
   const hijriLabel = formatHijri(hijri);
@@ -170,32 +168,8 @@ export default function TrackerScreen() {
 
         {/* ── Content below hero ── */}
         <View style={styles.content}>
-          {/* Hadith card */}
-          <Pressable
-            onPress={() => setHadithExpanded(!hadithExpanded)}
-            style={[styles.hadithCard, {
-              backgroundColor: colors.card,
-              borderColor: colors.goldLight,
-              shadowColor: colors.gold,
-            }]}
-          >
-            <View style={[styles.hadithHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-              <View style={[styles.hadithDot, { backgroundColor: colors.gold }]} />
-              <Text style={[styles.hadithSource, { color: colors.gold }]}>{hadith.source}</Text>
-              <Feather
-                name={hadithExpanded ? "chevron-up" : "chevron-down"}
-                size={13}
-                color={colors.gold}
-                style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }}
-              />
-            </View>
-            <Text
-              style={[styles.hadithText, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}
-              numberOfLines={hadithExpanded ? undefined : 2}
-            >
-              "{hadith.text}"
-            </Text>
-          </Pressable>
+          {/* Hadith Carousel */}
+          <HadithCarousel />
 
           {/* Section header */}
           <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
@@ -325,22 +299,6 @@ const styles = StyleSheet.create({
   },
 
   content: { paddingHorizontal: 16, paddingTop: 18 },
-  hadithCard: {
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 18,
-    borderWidth: 1,
-    gap: 6,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  hadithHeader: { alignItems: "center", gap: 7 },
-  hadithDot: { width: 6, height: 6, borderRadius: 3 },
-  hadithSource: { fontSize: 10, fontFamily: "Inter_600SemiBold", letterSpacing: 0.6, textTransform: "uppercase" },
-  hadithText: { fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 20, fontStyle: "italic" },
-
   sectionHeader: { alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 },
   sectionTitle: { fontSize: 18, fontFamily: "Inter_700Bold" },
   sectionHint: { fontSize: 11, fontFamily: "Inter_400Regular" },

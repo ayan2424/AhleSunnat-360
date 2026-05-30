@@ -86,7 +86,7 @@ export default function OnboardingScreen() {
     };
     setIsLoading(true);
     await completeOnboarding(profile);
-    router.replace("/(tabs)");
+    router.replace("/(tabs)" as any);
   }
 
   function canProceed() {
