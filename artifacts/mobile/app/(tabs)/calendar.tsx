@@ -194,6 +194,7 @@ export default function CalendarScreen() {
                       { width: CELL_SIZE, height: CELL_SIZE + 14 },
                       isSelected && { backgroundColor: colors.emerald, borderRadius: 10 },
                       isToday && !isSelected && { borderRadius: 10, borderWidth: 1.5, borderColor: colors.emerald },
+                      hasEvent && !isSelected && !isToday && { backgroundColor: topEvent?.type === "celebration" ? "rgba(200,168,75,0.13)" : topEvent?.type === "martyr" ? "rgba(180,60,60,0.10)" : topEvent?.type === "fast" ? "rgba(27,107,69,0.12)" : "rgba(27,107,69,0.10)", borderRadius: 10 },
                     ]}
                   >
                     <Text style={[

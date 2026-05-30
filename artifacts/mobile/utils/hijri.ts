@@ -118,7 +118,7 @@ export const ISLAMIC_EVENTS: IslamicEvent[] = [
   { month: 12, day: 11, title: "Ayyam al-Tashreeq — Day 2",             titleUr: "ایام تشریق (دوسرا دن)",     type: "celebration", emoji: "🎊", description: "Days of Hajj — stoning the Jamarat in Mina. Qurbani valid until sunset of 13th Dhul Hijjah. Days of eating, drinking, and remembering Allah" },
   { month: 12, day: 12, title: "Ayyam al-Tashreeq — Day 3",             titleUr: "ایام تشریق (تیسرا دن)",     type: "celebration", emoji: "🎊", description: "Continued Hajj rites — some pilgrims may leave Mina (Nafar Awwal) after stoning on this day" },
   { month: 12, day: 13, title: "Ayyam al-Tashreeq — Last Day",          titleUr: "ایام تشریق (آخری دن)",      type: "celebration", emoji: "🎊", description: "Final day of Hajj activities — all pilgrims must stone the Jamarat and leave Mina before sunset" },
-  { month: 12, day: 18, title: "Eid al-Ghadeer",                        titleUr: "عید غدیر",                  type: "special",     emoji: "🌟", description: "Day of Ghadir Khumm — the Prophet's ﷺ final sermon. Celebrated by Shia Muslims and some Sufi/Barelvi communities" },
+  { month: 12, day: 18, title: "Shahadat Hazrat Uthman RA",             titleUr: "شہادت حضرت عثمانؓ",         type: "martyr",      emoji: "🕌", description: "3rd Khalifa Hazrat Uthman ibn Affan RA was martyred on 18 Dhul Hijjah 35 AH. Compiler of the Quran, possessor of two lights (Dhun-Nurayn). His Shahadat is a day of grief for Ahl al-Sunna." },
   { month: 12, day: 24, title: "Shahadat Hazrat Umar ibn al-Khattab RA", titleUr: "شہادت حضرت عمر فاروقؓ",  type: "martyr",      emoji: "🕌", description: "2nd Khalifa — Al-Farouq (one who distinguishes right from wrong), martyred while leading Fajr prayer in Masjid al-Nabawi" },
 ];
 

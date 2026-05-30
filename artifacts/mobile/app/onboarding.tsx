@@ -187,18 +187,35 @@ export default function OnboardingScreen() {
                   {t("pubertyDesc")}
                   {"\n"}{t("pubertyHint")} {gender === "female" ? "11–14" : "13–16"} {t("years")}.
                 </Text>
-                <View style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: isRTL ? "row-reverse" : "row" }]}>
-                  <TextInput
-                    style={[s.input, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}
-                    value={pubertyAge}
-                    onChangeText={setPubertyAge}
-                    keyboardType="number-pad"
-                    placeholder={gender === "female" ? "12" : "14"}
-                    placeholderTextColor={colors.mutedForeground}
-                    maxLength={2}
-                  />
-                  <Text style={[s.inputSuffix, { color: colors.mutedForeground }]}>{t("yearsOld")}</Text>
+                <View style={[s.stepperCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Pressable
+                    onPress={() => {
+                      const v = Math.max(7, parseInt(pubertyAge, 10) - 1);
+                      setPubertyAge(String(v));
+                      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                    style={[s.stepperBtn, { backgroundColor: colors.muted }]}
+                  >
+                    <Feather name="minus" size={26} color={colors.foreground} />
+                  </Pressable>
+                  <View style={s.stepperCenter}>
+                    <Text style={[s.stepperNum, { color: colors.foreground }]}>{pubertyAge}</Text>
+                    <Text style={[s.stepperUnit, { color: colors.mutedForeground }]}>{t("yearsOld")}</Text>
+                  </View>
+                  <Pressable
+                    onPress={() => {
+                      const v = Math.min(20, parseInt(pubertyAge, 10) + 1);
+                      setPubertyAge(String(v));
+                      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                    style={[s.stepperBtn, { backgroundColor: colors.muted }]}
+                  >
+                    <Feather name="plus" size={26} color={colors.foreground} />
+                  </Pressable>
                 </View>
+                <Text style={[s.stepperRange, { color: colors.mutedForeground, textAlign: "center" }]}>
+                  {t("years")} 7 – 20
+                </Text>
               </View>
             )}
 
@@ -405,6 +422,18 @@ const s = StyleSheet.create({
   inputCard: { alignItems: "center", borderRadius: 16, borderWidth: 1.5, paddingHorizontal: 20, paddingVertical: 4 },
   input: { flex: 1, fontSize: 40, fontFamily: "Inter_700Bold", paddingVertical: 16 },
   inputSuffix: { fontSize: 14, fontFamily: "Inter_400Regular" },
+  stepperCard: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    borderRadius: 24, borderWidth: 1.5, paddingHorizontal: 10, paddingVertical: 10,
+  },
+  stepperBtn: {
+    width: 68, height: 68, borderRadius: 34,
+    alignItems: "center", justifyContent: "center",
+  },
+  stepperCenter: { flex: 1, alignItems: "center", gap: 2 },
+  stepperNum: { fontSize: 60, fontFamily: "Inter_700Bold", lineHeight: 72 },
+  stepperUnit: { fontSize: 13, fontFamily: "Inter_400Regular" },
+  stepperRange: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 10 },
   infoCard: { borderRadius: 12, padding: 14, gap: 10, marginTop: 16 },
   infoText: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 20 },
   errorText: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 8 },

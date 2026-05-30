@@ -72,6 +72,7 @@ export default function DuasScreen() {
     evening: t("eveningAzkar"),
     afterSalah: t("afterSalah"),
     special: t("specialDuas"),
+    salawat: t("salawatDurood"),
   };
 
   return (

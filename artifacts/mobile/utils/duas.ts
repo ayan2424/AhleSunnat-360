@@ -1,4 +1,4 @@
-export type DuaCategory = "morning" | "evening" | "afterSalah" | "special";
+export type DuaCategory = "morning" | "evening" | "afterSalah" | "special" | "salawat";
 
 export interface Dua {
   id: string;
@@ -264,3 +264,69 @@ export const DUA_CATEGORIES: { key: DuaCategory; icon: string }[] = [
   { key: "afterSalah", icon: "🕌" },
   { key: "special",   icon: "⭐" },
 ];
+
+// ───── SALAWAT & DUROOD ─────────────────────────────────────────────────────
+DUAS.push(
+  {
+    id: "salawat_1",
+    category: "salawat",
+    title: "Durood Ibrahim — درود ابراہیم",
+    arabic: "اَللّٰهُمَّ صَلِّ عَلٰى سَيِّدِنَا مُحَمَّدٍ وَّعَلٰى آلِ سَيِّدِنَا مُحَمَّدٍ كَمَا صَلَّيْتَ عَلٰى سَيِّدِنَا إِبْرَاهِيمَ وَعَلٰى آلِ سَيِّدِنَا إِبْرَاهِيمَ وَبَارِكْ عَلٰى سَيِّدِنَا مُحَمَّدٍ وَّعَلٰى آلِ سَيِّدِنَا مُحَمَّدٍ كَمَا بَارَكْتَ عَلٰى سَيِّدِنَا إِبْرَاهِيمَ وَعَلٰى آلِ سَيِّدِنَا إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ",
+    transliteration: "Allahumma salli 'ala Sayyidina Muhammadin wa 'ala aali Sayyidina Muhammadin kama sallayta 'ala Sayyidina Ibrahima wa 'ala aali Sayyidina Ibrahima. Wa barik 'ala Sayyidina Muhammadin wa 'ala aali Sayyidina Muhammadin kama barakta 'ala Sayyidina Ibrahima, innaka Hamidun Majid.",
+    translation: "O Allah, send blessings upon our Master Muhammad and his family as You sent blessings on Ibrahim and his family. Bestow grace upon Muhammad and his family as You bestowed on Ibrahim and his family. Verily You are the Most Praiseworthy, Most Glorious.",
+    source: "Sahih Bukhari & Muslim — recited in every Salah",
+    count: 10,
+  },
+  {
+    id: "salawat_2",
+    category: "salawat",
+    title: "Durood Taj — درود تاج",
+    arabic: "اَللّٰهُمَّ صَلِّ عَلٰى سَيِّدِنَا وَمَوْلَانَا مُحَمَّدٍ صَاحِبِ التَّاجِ وَالْمِعْرَاجِ وَالْبُرَاقِ وَالْعَلَمِ دَافِعِ الْبَلَاءِ وَالْوَبَاءِ وَالْقَحْطِ وَالْمَرَضِ وَالْأَلَمِ اِسْمُهُ مَكْتُوبٌ مَّرْفُوعٌ مَّشْفُوعٌ مَنْقُوشٌ فِي اللَّوْحِ وَالْقَلَمِ سَيِّدُ الْعَرَبِ وَالْعَجَمِ جِسْمُهُ مُقَدَّسٌ مُعَطَّرٌ مُطَهَّرٌ مُنَوَّرٌ فِي الْبَيْتِ وَالْحَرَمِ",
+    transliteration: "Allahumma salli 'ala Sayyidina wa Mawlana Muhammadin, sahib-it-taji wal-mi'raji wal-buraqi wal-'alam, dafi'il-bala-i wal-waba-i wal-qahti wal-maradi wal-alam, ismuhu maktubun marfu'un mashfu'un manqushun fil-lawhi wal-qalam...",
+    translation: "O Allah, send blessings upon our Master and Lord Muhammad — the possessor of the Crown, the Mi'raj, the Buraq and the Standard; the repeller of calamity, plague, drought, illness and pain. His name is written, exalted, and engraved upon the Preserved Tablet and the Pen. Master of Arabs and non-Arabs.",
+    source: "Durood Taj — beloved Salawat of Barelvi/Sufi tradition",
+    count: 7,
+  },
+  {
+    id: "salawat_3",
+    category: "salawat",
+    title: "Durood Nariya — درود نارية",
+    arabic: "اَللّٰهُمَّ صَلِّ صَلَاةً كَامِلَةً وَسَلِّمْ سَلَامًا تَامًّا عَلٰى سَيِّدِنَا مُحَمَّدٍ الَّذِي تَنْحَلُّ بِهِ الْعُقَدُ وَتَنْفَرِجُ بِهِ الْكُرَبُ وَتُقْضٰى بِهِ الْحَوَائِجُ وَتُنَالُ بِهِ الرَّغَائِبُ وَحُسْنُ الْخَوَاتِيمِ وَيُسْتَسْقَى الْغَمَامُ بِوَجْهِهِ الْكَرِيمِ وَعَلٰى آلِهٖ وَصَحْبِهٖ فِي كُلِّ لَمْحَةٍ وَنَفَسٍ بِعَدَدِ كُلِّ مَعْلُومٍ لَّكَ",
+    transliteration: "Allahumma salli salatan kamilatan wa sallim salaman tamman 'ala Sayyidina Muhammadin alladhi tanhallu bihil-'uqad, wa tanfariju bihil-kurab, wa tuqda bihil-hawa'ij, wa tunaalu bihir-ragha'ib, wa husnil-khawatim, wa yustasqal-ghamamu bi-wajhihil-karim...",
+    translation: "O Allah, bestow a complete blessing and perfect peace upon our Master Muhammad — through whom knots are untied, sorrows are relieved, needs are fulfilled, desires are attained with a good ending, and through whose noble face the clouds bring rain — and upon his family and companions.",
+    source: "Durood Nariya — recited for relief from hardship",
+    count: 11,
+  },
+  {
+    id: "salawat_4",
+    category: "salawat",
+    title: "Salawat al-Fatih — صلاة الفاتح",
+    arabic: "اَللّٰهُمَّ صَلِّ عَلٰى سَيِّدِنَا مُحَمَّدٍ الْفَاتِحِ لِمَا أُغْلِقَ وَالْخَاتِمِ لِمَا سَبَقَ نَاصِرِ الْحَقِّ بِالْحَقِّ وَالْهَادِي إِلٰى صِرَاطِكَ الْمُسْتَقِيمِ وَعَلٰى آلِهٖ حَقَّ قَدْرِهٖ وَمِقْدَارِهِ الْعَظِيمِ",
+    transliteration: "Allahumma salli 'ala Sayyidina Muhammadil-fatih lima ughliq, wal-khatim lima sabaq, nasiri'l-haqqi bil-haqq, wal-hadi ila siratik-al-mustaqim, wa 'ala alihi haqqa qadrih wa miqdarihi'l-'azim.",
+    translation: "O Allah, send blessings upon our Master Muhammad, the opener of what was closed, the seal of all that preceded, the helper of truth through truth, the guide to Your straight path — and upon his family in a manner befitting his tremendous rank.",
+    source: "Salawat al-Fatih — widely used by Sufi orders",
+    count: 10,
+  },
+  {
+    id: "salawat_5",
+    category: "salawat",
+    title: "Durood-e-Shafi — درود شافع",
+    arabic: "اَللّٰهُمَّ صَلِّ عَلٰى سَيِّدِنَا مُحَمَّدٍ الشَّافِعِ الْمُشَفَّعِ سَيِّدِ الْمُرْسَلِينَ وَخَاتَمِ النَّبِيِّينَ وَعَلٰى آلِهٖ الطَّيِّبِينَ وَأَصْحَابِهٖ الطَّاهِرِينَ وَمَنْ تَبِعَهُمْ بِإِحْسَانٍ إِلٰى يَوْمِ الدِّينِ",
+    transliteration: "Allahumma salli 'ala Sayyidina Muhammadinis-Shafi'il-Mushaffa', Sayyidil-Mursalin wa Khatamin-Nabiyyin, wa 'ala alihi't-tayyibin wa ashabihi't-tahirin wa man tabi'ahum bi-ihsanin ila yawmid-din.",
+    translation: "O Allah, send blessings upon our Master Muhammad, the Intercessor whose intercession is accepted — Master of the Messengers and Seal of the Prophets — and upon his pure family, his purified companions, and all who follow them in goodness until the Day of Judgment.",
+    source: "Classical Salawat — Ahl al-Sunna tradition",
+    count: 10,
+  },
+  {
+    id: "salawat_6",
+    category: "salawat",
+    title: "Simple Salawat — اکیسویں مرتبہ",
+    arabic: "صَلَّى اللّٰهُ عَلَيْهِ وَعَلٰى آلِهٖ وَصَحْبِهٖ وَسَلَّمَ",
+    transliteration: "Sallallahu 'alayhi wa 'ala alihi wa sahbihi wa sallam",
+    translation: "May Allah send His blessings and peace upon him, his family, and his companions.",
+    source: "Sunnah — send Salawat upon every mention of the Prophet ﷺ",
+    count: 100,
+  }
+);
+
+DUA_CATEGORIES.push({ key: "salawat", icon: "💚" });

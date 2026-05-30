@@ -193,23 +193,30 @@ export default function TrackerScreen() {
 
       {/* FAB */}
       {!allDone && (
-        <View style={[styles.fab, { bottom: fabBottom, paddingBottom: 12 }]}>
-          <Animated.View style={{ transform: [{ scale: quickLogScale }], width: "100%" }}>
-            <Pressable
-              onPress={handleQuickLog}
-              style={[styles.quickLogBtn, { backgroundColor: colors.emerald }]}
-              android_ripple={{ color: "rgba(255,255,255,0.2)" }}
-            >
-              <Feather name="check-square" size={18} color="#FFFFFF" />
-              <Text style={styles.quickLogText}>{t("quickLogFullDay")}</Text>
-              <View style={styles.quickLogPill}>
-                <Text style={styles.quickLogPillText}>{t("sixPrayers")}</Text>
-              </View>
-            </Pressable>
-          </Animated.View>
-          <Text style={[styles.fabHint, { color: colors.mutedForeground }]}>
-            {t("logsOneQaza")}
-          </Text>
+        <View style={[styles.fabOuter, { bottom: 0 }]} pointerEvents="box-none">
+          <LinearGradient
+            colors={["transparent", (colors.background + "DD") as any, colors.background]}
+            style={StyleSheet.absoluteFillObject}
+            pointerEvents="none"
+          />
+          <View style={[styles.fab, { paddingBottom: fabBottom + 14 }]}>
+            <Animated.View style={{ transform: [{ scale: quickLogScale }], width: "100%" }}>
+              <Pressable
+                onPress={handleQuickLog}
+                style={[styles.quickLogBtn, { backgroundColor: colors.emerald }]}
+                android_ripple={{ color: "rgba(255,255,255,0.2)" }}
+              >
+                <Feather name="check-square" size={18} color="#FFFFFF" />
+                <Text style={styles.quickLogText}>{t("quickLogFullDay")}</Text>
+                <View style={styles.quickLogPill}>
+                  <Text style={styles.quickLogPillText}>{t("sixPrayers")}</Text>
+                </View>
+              </Pressable>
+            </Animated.View>
+            <Text style={[styles.fabHint, { color: colors.mutedForeground }]}>
+              {t("logsOneQaza")}
+            </Text>
+          </View>
         </View>
       )}
     </View>
@@ -303,10 +310,12 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontFamily: "Inter_700Bold" },
   sectionHint: { fontSize: 11, fontFamily: "Inter_400Regular" },
 
-  fab: {
+  fabOuter: {
     position: "absolute", left: 0, right: 0,
+    paddingTop: 50,
+  },
+  fab: {
     paddingHorizontal: 16, paddingTop: 10, alignItems: "center",
-    backgroundColor: "transparent",
   },
   quickLogBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
