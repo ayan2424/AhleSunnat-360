@@ -14,6 +14,15 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { PrayerInfo } from "@/utils/calculations";
 import type { TranslationKey } from "@/utils/translations";
 
+const PRAYER_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]> = {
+  fajar:   "sunrise",
+  zohar:   "sun",
+  asar:    "cloud",
+  maghrib: "sunset",
+  isha:    "moon",
+  witr:    "star",
+};
+
 interface PrayerCardProps {
   prayer: PrayerInfo;
   remaining: number;
@@ -43,14 +52,17 @@ export function PrayerCard({
 
   const prayerNameKey = prayer.key as TranslationKey;
   const timeLabelKeyMap: Record<string, TranslationKey> = {
-    fajar: "dawn", zohar: "noon", asar: "afternoon", maghrib: "sunset", isha: "night", witr: "night",
+    fajar: "dawn", zohar: "noon", asar: "afternoon",
+    maghrib: "sunset", isha: "night", witr: "night",
   };
   const timeLabelKey = timeLabelKeyMap[prayer.key];
+  const typeKey = prayer.type === "Farz" ? "farz" : "wajib";
+  const prayerIcon = PRAYER_ICONS[prayer.key] ?? "star";
 
   useEffect(() => {
     if (prevRemaining.current !== remaining) {
       Animated.sequence([
-        Animated.timing(countFlash, { toValue: 1.25, duration: 100, useNativeDriver: true }),
+        Animated.timing(countFlash, { toValue: 1.3, duration: 100, useNativeDriver: true }),
         Animated.spring(countFlash, { toValue: 1, friction: 4, useNativeDriver: true }),
       ]).start();
       prevRemaining.current = remaining;
@@ -59,56 +71,71 @@ export function PrayerCard({
 
   function animatePress(scale: Animated.Value, callback: () => void) {
     Animated.sequence([
-      Animated.timing(scale, { toValue: 0.82, duration: 70, useNativeDriver: true }),
-      Animated.spring(scale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: true }),
+      Animated.timing(scale, { toValue: 0.80, duration: 65, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, friction: 4, tension: 80, useNativeDriver: true }),
     ]).start();
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     callback();
   }
-
-  const typeKey = prayer.type === "Farz" ? "farz" : "wajib";
 
   return (
     <View
       style={[
         styles.card,
         {
-          backgroundColor: colors.card,
-          borderColor: isComplete ? colors.gold : colors.border,
-          borderWidth: isComplete ? 1.5 : 1,
-          shadowColor: prayer.color,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isComplete ? 0 : 0.06,
-          shadowRadius: 8,
-          elevation: isComplete ? 0 : 2,
+          backgroundColor: isComplete ? colors.goldLight + "88" : colors.card,
+          shadowColor: isComplete ? colors.gold : "#000000",
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: isComplete ? 0.15 : 0.07,
+          shadowRadius: 10,
+          elevation: 4,
         },
       ]}
     >
+      {/* Completion accent bar */}
+      {isComplete && (
+        <View style={[styles.accentBar, { backgroundColor: colors.gold }]} />
+      )}
+
       <View style={[styles.body, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+        {/* Left: icon + info */}
         <View style={[styles.leftSection, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-          <View style={[styles.prayerIconBg, { backgroundColor: prayer.color + "22" }]}>
-            <View style={[styles.prayerDot, { backgroundColor: prayer.color }]} />
+          <View
+            style={[
+              styles.iconCircle,
+              { backgroundColor: isComplete ? colors.goldLight : prayer.color + "1A" },
+            ]}
+          >
+            <Feather
+              name={prayerIcon}
+              size={18}
+              color={isComplete ? colors.gold : prayer.color}
+            />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.prayerName, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
+            <Text
+              style={[
+                styles.prayerName,
+                { color: isComplete ? colors.gold : colors.foreground, textAlign: isRTL ? "right" : "left" },
+              ]}
+            >
               {t(prayerNameKey)}
             </Text>
-            <Text style={[styles.arabicRow, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
-              <Text style={styles.arabicName}>{prayer.arabicName}</Text>
-              {"  ·  "}
-              <Text>{prayer.rakaat} {t(typeKey as TranslationKey)}</Text>
-              {"  ·  "}
-              <Text>{timeLabelKey ? t(timeLabelKey) : prayer.timeLabel}</Text>
+            <Text
+              style={[styles.prayerMeta, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}
+              numberOfLines={1}
+            >
+              {prayer.arabicName}{"  ·  "}{prayer.rakaat} {t(typeKey as TranslationKey)}
+              {"  ·  "}{timeLabelKey ? t(timeLabelKey) : prayer.timeLabel}
             </Text>
           </View>
         </View>
 
+        {/* Right: controls */}
         <View style={styles.rightSection}>
           {isComplete ? (
-            <View style={[styles.completedBadge, { backgroundColor: colors.goldLight }]}>
-              <Feather name="check-circle" size={13} color={colors.gold} />
+            <View style={[styles.completedBadge, { backgroundColor: colors.gold + "22" }]}>
+              <Feather name="check-circle" size={14} color={colors.gold} />
               <Text style={[styles.completedText, { color: colors.gold }]}>{t("complete")}</Text>
             </View>
           ) : (
@@ -116,18 +143,15 @@ export function PrayerCard({
               <Animated.View style={{ transform: [{ scale: scaleIncrement }] }}>
                 <Pressable
                   onPress={() => animatePress(scaleIncrement, onIncrement)}
-                  style={[styles.adjBtn, { backgroundColor: colors.muted }]}
-                  hitSlop={10}
+                  style={[styles.undoBtn, { backgroundColor: colors.muted }]}
+                  hitSlop={12}
                 >
                   <Feather name="minus" size={15} color={colors.mutedForeground} />
                 </Pressable>
               </Animated.View>
 
               <Animated.Text
-                style={[
-                  styles.count,
-                  { color: colors.foreground, transform: [{ scale: countFlash }] },
-                ]}
+                style={[styles.count, { color: colors.foreground, transform: [{ scale: countFlash }] }]}
               >
                 {remaining.toLocaleString()}
               </Animated.Text>
@@ -136,9 +160,10 @@ export function PrayerCard({
                 <Pressable
                   onPress={() => animatePress(scaleDecrement, onDecrement)}
                   style={[styles.logBtn, { backgroundColor: prayer.color }]}
-                  hitSlop={10}
+                  hitSlop={8}
+                  android_ripple={{ color: "rgba(255,255,255,0.3)" }}
                 >
-                  <Feather name="check" size={16} color="#FFFFFF" />
+                  <Feather name="check" size={19} color="#FFF" />
                 </Pressable>
               </Animated.View>
             </View>
@@ -146,22 +171,16 @@ export function PrayerCard({
         </View>
       </View>
 
-      <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
-        <View
-          style={[
-            styles.progressFill,
-            {
-              width: `${progressWidth}%` as any,
-              backgroundColor: isComplete ? colors.gold : prayer.color,
-            },
-          ]}
-        />
-      </View>
-
+      {/* Progress bar */}
       {!isComplete && (
-        <Text style={[styles.progressLabel, { color: colors.mutedForeground, textAlign: isRTL ? "left" : "right" }]}>
-          {Math.round(percent)}% {t("donePct")} · {completed.toLocaleString()} {t("completed")}
-        </Text>
+        <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
+          <View
+            style={[
+              styles.progressFill,
+              { width: `${progressWidth}%` as any, backgroundColor: prayer.color },
+            ]}
+          />
+        </View>
       )}
     </View>
   );
@@ -169,103 +188,57 @@ export function PrayerCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    paddingHorizontal: 16,
+    borderRadius: 18,
+    paddingHorizontal: 14,
     paddingTop: 14,
-    paddingBottom: 12,
-    marginBottom: 10,
+    paddingBottom: 11,
+    marginBottom: 9,
     overflow: "hidden",
   },
-  body: {
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-    gap: 8,
-  },
-  leftSection: {
-    alignItems: "center",
-    gap: 12,
-    flex: 1,
-    minWidth: 0,
-  },
-  prayerIconBg: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+  accentBar: { position: "absolute", left: 0, top: 0, bottom: 0, width: 4 },
+  body: { alignItems: "center", justifyContent: "space-between", marginBottom: 11, gap: 8 },
+  leftSection: { alignItems: "center", gap: 12, flex: 1, minWidth: 0 },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
-  prayerDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  prayerName: {
-    fontSize: 15,
-    fontFamily: "Inter_700Bold",
-    lineHeight: 20,
-  },
-  arabicRow: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    marginTop: 2,
-  },
-  arabicName: {
-    fontSize: 12,
-  },
-  rightSection: {
-    alignItems: "flex-end",
-    flexShrink: 0,
-  },
-  controls: {
-    alignItems: "center",
-    gap: 8,
-  },
-  adjBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 9,
+  prayerName: { fontSize: 15, fontFamily: "Inter_700Bold", lineHeight: 20 },
+  prayerMeta: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 3, lineHeight: 16 },
+  rightSection: { alignItems: "flex-end", flexShrink: 0 },
+  controls: { alignItems: "center", gap: 8 },
+  undoBtn: {
+    width: 33,
+    height: 33,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
   logBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
   },
   count: {
-    fontSize: 20,
+    fontSize: 22,
     fontFamily: "Inter_700Bold",
-    minWidth: 48,
+    minWidth: 52,
     textAlign: "center",
   },
   completedBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    gap: 6,
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    borderRadius: 22,
   },
-  completedText: {
-    fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
-  },
-  progressTrack: {
-    height: 4,
-    borderRadius: 2,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: 4,
-    borderRadius: 2,
-  },
-  progressLabel: {
-    fontSize: 10,
-    fontFamily: "Inter_400Regular",
-    marginTop: 5,
-  },
+  completedText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  progressTrack: { height: 5, borderRadius: 3, overflow: "hidden" },
+  progressFill: { height: 5, borderRadius: 3 },
 });

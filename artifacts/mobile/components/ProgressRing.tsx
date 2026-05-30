@@ -10,6 +10,9 @@ interface ProgressRingProps {
   label?: string;
   sublabel?: string;
   color?: string;
+  trackColor?: string;
+  textColor?: string;
+  sublabelColor?: string;
 }
 
 export function ProgressRing({
@@ -19,32 +22,30 @@ export function ProgressRing({
   label,
   sublabel,
   color,
+  trackColor,
+  textColor,
+  sublabelColor,
 }: ProgressRingProps) {
   const colors = useColors();
   const ringColor = color ?? colors.gold;
+  const ringTrack = trackColor ?? colors.muted;
+  const labelColor = textColor ?? colors.foreground;
+  const subColor = sublabelColor ?? (textColor ? textColor + "BB" : colors.mutedForeground);
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percent / 100) * circumference;
+  const strokeDashoffset = circumference - (Math.min(100, percent) / 100) * circumference;
   const center = size / 2;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       <Svg width={size} height={size}>
         <Circle
-          cx={center}
-          cy={center}
-          r={radius}
-          stroke={colors.muted}
-          strokeWidth={strokeWidth}
-          fill="none"
+          cx={center} cy={center} r={radius}
+          stroke={ringTrack} strokeWidth={strokeWidth} fill="none"
         />
         <Circle
-          cx={center}
-          cy={center}
-          r={radius}
-          stroke={ringColor}
-          strokeWidth={strokeWidth}
-          fill="none"
+          cx={center} cy={center} r={radius}
+          stroke={ringColor} strokeWidth={strokeWidth} fill="none"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
@@ -54,10 +55,10 @@ export function ProgressRing({
       </Svg>
       <View style={styles.labelContainer}>
         {label !== undefined && (
-          <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>
+          <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
         )}
         {sublabel !== undefined && (
-          <Text style={[styles.sublabel, { color: colors.mutedForeground }]}>{sublabel}</Text>
+          <Text style={[styles.sublabel, { color: subColor }]}>{sublabel}</Text>
         )}
       </View>
     </View>
@@ -65,24 +66,8 @@ export function ProgressRing({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  labelContainer: {
-    position: "absolute",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  label: {
-    fontSize: 22,
-    fontFamily: "Inter_700Bold",
-    textAlign: "center",
-  },
-  sublabel: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    textAlign: "center",
-    marginTop: 2,
-  },
+  container: { alignItems: "center", justifyContent: "center" },
+  labelContainer: { position: "absolute", alignItems: "center", justifyContent: "center" },
+  label: { fontSize: 22, fontFamily: "Inter_700Bold", textAlign: "center" },
+  sublabel: { fontSize: 11, fontFamily: "Inter_400Regular", textAlign: "center", marginTop: 2 },
 });

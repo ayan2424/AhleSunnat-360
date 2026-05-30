@@ -15,7 +15,7 @@ function NativeTabLayout() {
     <NativeTabs>
       <NativeTabs.Trigger name="tracker">
         <Icon sf={{ default: "moon.stars", selected: "moon.stars.fill" }} />
-        <Label>{t("tabTracker" as any) ?? "Tracker"}</Label>
+        <Label>Tracker</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="tasbih">
         <Icon sf={{ default: "circlebadge.2", selected: "circlebadge.2.fill" }} />
@@ -23,23 +23,23 @@ function NativeTabLayout() {
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="duas">
         <Icon sf={{ default: "hands.sparkles", selected: "hands.sparkles.fill" }} />
-        <Label>{t("azkar")}</Label>
+        <Label>Duas</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="calendar">
         <Icon sf={{ default: "star.circle", selected: "star.circle.fill" }} />
-        <Label>{t("islamicCalendar" as any) ?? "Calendar"}</Label>
+        <Label>Calendar</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="progress">
         <Icon sf={{ default: "chart.bar", selected: "chart.bar.fill" }} />
-        <Label>{t("tabProgress" as any) ?? "Progress"}</Label>
+        <Label>Progress</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="history">
         <Icon sf={{ default: "calendar", selected: "calendar.badge.checkmark" }} />
-        <Label>{t("tabHistory" as any) ?? "History"}</Label>
+        <Label>History</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
         <Icon sf={{ default: "gearshape", selected: "gearshape.fill" }} />
-        <Label>{t("tabSettings" as any) ?? "Settings"}</Label>
+        <Label>Settings</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -69,7 +69,10 @@ function ClassicTabLayout() {
         },
         tabBarLabelStyle: {
           fontFamily: "Inter_500Medium",
-          fontSize: 11,
+          fontSize: 10,
+        },
+        tabBarIconStyle: {
+          marginBottom: -2,
         },
         tabBarBackground: () =>
           isIOS ? (
@@ -87,11 +90,12 @@ function ClassicTabLayout() {
         name="tracker"
         options={{
           title: t("dailyTracker"),
+          tabBarLabel: "Tracker",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="moon.stars" tintColor={color} size={24} />
+              <SymbolView name="moon.stars" tintColor={color} size={22} />
             ) : (
-              <Feather name="moon" size={22} color={color} />
+              <Feather name="moon" size={21} color={color} />
             ),
         }}
       />
@@ -99,11 +103,12 @@ function ClassicTabLayout() {
         name="tasbih"
         options={{
           title: t("tasbih"),
+          tabBarLabel: t("tasbih"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="circlebadge.2" tintColor={color} size={24} />
+              <SymbolView name="circlebadge.2" tintColor={color} size={22} />
             ) : (
-              <Feather name="rotate-cw" size={22} color={color} />
+              <Feather name="rotate-cw" size={21} color={color} />
             ),
         }}
       />
@@ -111,11 +116,12 @@ function ClassicTabLayout() {
         name="duas"
         options={{
           title: t("azkar"),
+          tabBarLabel: "Duas",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="hands.sparkles" tintColor={color} size={24} />
+              <SymbolView name="hands.sparkles" tintColor={color} size={22} />
             ) : (
-              <Feather name="book-open" size={22} color={color} />
+              <Feather name="book-open" size={21} color={color} />
             ),
         }}
       />
@@ -123,11 +129,12 @@ function ClassicTabLayout() {
         name="calendar"
         options={{
           title: t("islamicCalendar" as any) ?? "Calendar",
+          tabBarLabel: "Calendar",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="star.circle" tintColor={color} size={24} />
+              <SymbolView name="star.circle" tintColor={color} size={22} />
             ) : (
-              <Feather name="star" size={22} color={color} />
+              <Feather name="star" size={21} color={color} />
             ),
         }}
       />
@@ -135,11 +142,12 @@ function ClassicTabLayout() {
         name="progress"
         options={{
           title: t("progress"),
+          tabBarLabel: "Progress",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="chart.bar" tintColor={color} size={24} />
+              <SymbolView name="chart.bar" tintColor={color} size={22} />
             ) : (
-              <Feather name="bar-chart-2" size={22} color={color} />
+              <Feather name="bar-chart-2" size={21} color={color} />
             ),
         }}
       />
@@ -147,11 +155,12 @@ function ClassicTabLayout() {
         name="history"
         options={{
           title: t("history"),
+          tabBarLabel: "History",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="calendar" tintColor={color} size={24} />
+              <SymbolView name="calendar" tintColor={color} size={22} />
             ) : (
-              <Feather name="calendar" size={22} color={color} />
+              <Feather name="calendar" size={21} color={color} />
             ),
         }}
       />
@@ -159,11 +168,12 @@ function ClassicTabLayout() {
         name="settings"
         options={{
           title: t("settings"),
+          tabBarLabel: "Settings",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="gearshape" tintColor={color} size={24} />
+              <SymbolView name="gearshape" tintColor={color} size={22} />
             ) : (
-              <Feather name="settings" size={22} color={color} />
+              <Feather name="settings" size={21} color={color} />
             ),
         }}
       />

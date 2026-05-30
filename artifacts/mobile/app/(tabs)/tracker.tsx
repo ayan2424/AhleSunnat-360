@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import React, { useRef, useState } from "react";
 import {
@@ -9,6 +10,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useColorScheme,
 } from "react-native";
 import { MilestoneModal } from "@/components/MilestoneModal";
 import { PrayerCard } from "@/components/PrayerCard";
@@ -27,6 +29,7 @@ const hadith = getDailyHadith();
 
 export default function TrackerScreen() {
   const colors = useColors();
+  const colorScheme = useColorScheme();
   const { topPad, scrollBottomFab, fabBottom, isSmall } = useLayout();
   const { t, isRTL } = useTranslation();
   const {
@@ -50,6 +53,11 @@ export default function TrackerScreen() {
   const nextMilestone = getNextMilestone(totalCompleted);
   const daysUntilNext = nextMilestone ? nextMilestone.value - totalCompleted : null;
 
+  const isDark = colorScheme === "dark";
+  const heroColors: [string, string] = isDark
+    ? ["#1A3A24", "#0D1A12"]
+    : ["#237A50", "#0D3D26"];
+
   function handleQuickLog() {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     Animated.sequence([
@@ -68,140 +76,155 @@ export default function TrackerScreen() {
       <MilestoneModal milestone={pendingMilestone} onDismiss={dismissMilestone} />
 
       <ScrollView
-        contentContainerStyle={[
-          styles.scroll,
-          { paddingTop: topPad + 12, paddingBottom: scrollBottomFab },
-        ]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: scrollBottomFab }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.topRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-          <View style={isRTL ? { alignItems: "flex-end" } : undefined}>
-            <Text style={[styles.greeting, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
+        {/* ── Gradient Hero ── */}
+        <LinearGradient
+          colors={heroColors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.hero, { paddingTop: topPad + 22 }]}
+        >
+          {/* Top row: greeting + streak */}
+          <View style={[styles.heroTopRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <Text style={[styles.heroGreeting, { textAlign: isRTL ? "right" : "left" }]}>
               السلام علیکم
             </Text>
-            <Text style={[styles.pageTitle, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
-              {t("dailyTracker")}
-            </Text>
-            <View style={[styles.hijriRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-              <View style={[styles.hijriChip, { backgroundColor: colors.goldLight }]}>
-                <Text style={[styles.hijriText, { color: colors.gold }]}>🌙 {hijriLabel}</Text>
+            {streak.currentStreak > 0 && (
+              <View style={[
+                styles.heroStreakPill,
+                { borderColor: streakActive ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.2)" },
+              ]}>
+                <Text style={[
+                  styles.heroStreakText,
+                  { color: streakActive ? "#FFD700" : "rgba(255,255,255,0.8)" },
+                ]}>
+                  {getStreakEmoji(streak.currentStreak)} {streak.currentStreak}
+                </Text>
               </View>
-              {specialNight && (
-                <View style={[styles.hijriChip, { backgroundColor: colors.emeraldLight }]}>
-                  <Text style={[styles.hijriText, { color: colors.emerald }]}>{specialNight}</Text>
+            )}
+          </View>
+
+          <Text style={[styles.heroTitle, { textAlign: isRTL ? "right" : "left" }]}>
+            {t("dailyTracker")}
+          </Text>
+
+          {/* Hijri chips */}
+          <View style={[styles.heroChipRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <View style={styles.heroChip}>
+              <Text style={styles.heroChipText}>🌙 {hijriLabel}</Text>
+            </View>
+            {specialNight && (
+              <View style={[styles.heroChip, { backgroundColor: "rgba(255,215,0,0.18)", borderColor: "rgba(255,215,0,0.35)" }]}>
+                <Text style={styles.heroChipText}>{specialNight}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Progress ring + stats */}
+          <View style={[styles.heroStatsRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <ProgressRing
+              percent={overallPercent}
+              size={isSmall ? 84 : 98}
+              strokeWidth={isSmall ? 8 : 10}
+              label={`${Math.round(overallPercent)}%`}
+              sublabel={t("done")}
+              color="rgba(255,255,255,0.95)"
+              trackColor="rgba(255,255,255,0.18)"
+              textColor="#FFFFFF"
+            />
+            <View style={styles.heroRight}>
+              <View style={[styles.heroStatRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                <View style={styles.heroStat}>
+                  <Text style={styles.heroStatVal}>{totalCompleted.toLocaleString()}</Text>
+                  <Text style={styles.heroStatLabel}>{t("completed")}</Text>
+                </View>
+                <View style={styles.heroStatSep} />
+                <View style={styles.heroStat}>
+                  <Text style={styles.heroStatVal}>{totalRemaining.toLocaleString()}</Text>
+                  <Text style={styles.heroStatLabel}>{t("remaining")}</Text>
+                </View>
+                <View style={styles.heroStatSep} />
+                <View style={styles.heroStat}>
+                  <Text style={styles.heroStatVal}>{streak.longestStreak}</Text>
+                  <Text style={styles.heroStatLabel}>{t("bestStreak")}</Text>
+                </View>
+              </View>
+
+              {!allDone && nextMilestone && daysUntilNext !== null && (
+                <View style={[styles.heroMilestone, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                  <Text style={styles.heroMilestoneText} numberOfLines={2}>
+                    🎯 {daysUntilNext.toLocaleString()} {t("nextTo")} {nextMilestone.emoji} {nextMilestone.title}
+                  </Text>
+                </View>
+              )}
+              {allDone && (
+                <View style={styles.heroMilestone}>
+                  <Text style={styles.heroMilestoneText}>🎉 {t("allDoneChip")}</Text>
                 </View>
               )}
             </View>
           </View>
-          {streak.currentStreak > 0 && (
-            <View style={[styles.streakBadge, {
-              backgroundColor: streakActive ? colors.goldLight : colors.muted,
-              borderColor: streakActive ? colors.gold : colors.border,
-            }]}>
-              <Text style={styles.streakEmoji}>{getStreakEmoji(streak.currentStreak)}</Text>
-              <Text style={[styles.streakNum, { color: streakActive ? colors.gold : colors.mutedForeground }]}>
-                {streak.currentStreak}
-              </Text>
-              <Text style={[styles.streakLabel, { color: streakActive ? colors.gold : colors.mutedForeground }]}>
-                {t("dayStreak")}
-              </Text>
-            </View>
-          )}
-        </View>
+        </LinearGradient>
 
-        <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: isRTL ? "row-reverse" : "row" }]}>
-          <ProgressRing
-            percent={overallPercent}
-            size={isSmall ? 80 : 96}
-            strokeWidth={isSmall ? 8 : 9}
-            label={`${Math.round(overallPercent)}%`}
-            sublabel={t("done")}
-          />
-          <View style={styles.heroRight}>
-            <View style={[styles.heroStats, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-              <View style={styles.heroStat}>
-                <Text style={[styles.heroVal, { color: colors.foreground }]}>
-                  {totalCompleted.toLocaleString()}
-                </Text>
-                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>{t("completed")}</Text>
-              </View>
-              <View style={[styles.heroDivider, { backgroundColor: colors.border }]} />
-              <View style={styles.heroStat}>
-                <Text style={[styles.heroVal, { color: colors.foreground }]}>
-                  {totalRemaining.toLocaleString()}
-                </Text>
-                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>{t("remaining")}</Text>
-              </View>
-              <View style={[styles.heroDivider, { backgroundColor: colors.border }]} />
-              <View style={styles.heroStat}>
-                <Text style={[styles.heroVal, { color: colors.foreground }]}>
-                  {streak.longestStreak}
-                </Text>
-                <Text style={[styles.heroLabel, { color: colors.mutedForeground }]}>{t("bestStreak")}</Text>
-              </View>
-            </View>
-            {!allDone && nextMilestone && daysUntilNext !== null && (
-              <View style={[styles.nextTarget, { backgroundColor: colors.emeraldLight, flexDirection: isRTL ? "row-reverse" : "row" }]}>
-                <Feather name="target" size={11} color={colors.emerald} />
-                <Text style={[styles.nextTargetText, { color: colors.emerald, textAlign: isRTL ? "right" : "left" }]}>
-                  {daysUntilNext.toLocaleString()} {t("nextTo")} {nextMilestone.emoji} {nextMilestone.title}
-                </Text>
-              </View>
-            )}
-            {allDone && (
-              <View style={[styles.nextTarget, { backgroundColor: colors.goldLight, flexDirection: isRTL ? "row-reverse" : "row" }]}>
-                <Text style={{ fontSize: 11 }}>🎉</Text>
-                <Text style={[styles.nextTargetText, { color: colors.gold }]}>{t("allDoneChip")}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        <Pressable
-          onPress={() => setHadithExpanded(!hadithExpanded)}
-          style={[styles.hadithCard, { backgroundColor: colors.card, borderColor: colors.goldLight }]}
-        >
-          <View style={[styles.hadithHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-            <View style={[styles.hadithDot, { backgroundColor: colors.gold }]} />
-            <Text style={[styles.hadithSource, { color: colors.gold }]}>{hadith.source}</Text>
-            <Feather
-              name={hadithExpanded ? "chevron-up" : "chevron-down"}
-              size={13}
-              color={colors.gold}
-              style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }}
-            />
-          </View>
-          <Text
-            style={[styles.hadithText, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}
-            numberOfLines={hadithExpanded ? undefined : 2}
+        {/* ── Content below hero ── */}
+        <View style={styles.content}>
+          {/* Hadith card */}
+          <Pressable
+            onPress={() => setHadithExpanded(!hadithExpanded)}
+            style={[styles.hadithCard, {
+              backgroundColor: colors.card,
+              borderColor: colors.goldLight,
+              shadowColor: colors.gold,
+            }]}
           >
-            "{hadith.text}"
-          </Text>
-        </Pressable>
+            <View style={[styles.hadithHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+              <View style={[styles.hadithDot, { backgroundColor: colors.gold }]} />
+              <Text style={[styles.hadithSource, { color: colors.gold }]}>{hadith.source}</Text>
+              <Feather
+                name={hadithExpanded ? "chevron-up" : "chevron-down"}
+                size={13}
+                color={colors.gold}
+                style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }}
+              />
+            </View>
+            <Text
+              style={[styles.hadithText, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}
+              numberOfLines={hadithExpanded ? undefined : 2}
+            >
+              "{hadith.text}"
+            </Text>
+          </Pressable>
 
-        <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("prayers")}</Text>
-          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>{t("logAndUndo")}</Text>
+          {/* Section header */}
+          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("prayers")}</Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>{t("logAndUndo")}</Text>
+          </View>
+
+          {/* Prayer cards */}
+          {PRAYERS.map((prayer) => (
+            <PrayerCard
+              key={prayer.key}
+              prayer={prayer}
+              remaining={currentCounts[prayer.key]}
+              initialCount={initialCounts[prayer.key]}
+              onDecrement={() => decrementPrayer(prayer.key)}
+              onIncrement={() => incrementPrayer(prayer.key)}
+            />
+          ))}
         </View>
-
-        {PRAYERS.map((prayer) => (
-          <PrayerCard
-            key={prayer.key}
-            prayer={prayer}
-            remaining={currentCounts[prayer.key]}
-            initialCount={initialCounts[prayer.key]}
-            onDecrement={() => decrementPrayer(prayer.key)}
-            onIncrement={() => incrementPrayer(prayer.key)}
-          />
-        ))}
       </ScrollView>
 
+      {/* FAB */}
       {!allDone && (
         <View style={[styles.fab, { bottom: fabBottom, paddingBottom: 12 }]}>
           <Animated.View style={{ transform: [{ scale: quickLogScale }], width: "100%" }}>
             <Pressable
               onPress={handleQuickLog}
               style={[styles.quickLogBtn, { backgroundColor: colors.emerald }]}
+              android_ripple={{ color: "rgba(255,255,255,0.2)" }}
             >
               <Feather name="check-square" size={18} color="#FFFFFF" />
               <Text style={styles.quickLogText}>{t("quickLogFullDay")}</Text>
@@ -221,50 +244,107 @@ export default function TrackerScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  scroll: { paddingHorizontal: 16 },
-  topRow: {
-    alignItems: "flex-start",
+  scroll: {},
+
+  hero: {
+    paddingHorizontal: 20,
+    paddingBottom: 28,
+    gap: 14,
+  },
+  heroTopRow: {
+    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 14,
   },
-  greeting: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 2 },
-  pageTitle: { fontSize: 24, fontFamily: "Inter_700Bold" },
-  hijriRow: { flexWrap: "wrap", gap: 6, marginTop: 6 },
-  hijriChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  hijriText: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
-  streakBadge: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    paddingHorizontal: 11, paddingVertical: 7, borderRadius: 13, borderWidth: 1.5,
+  heroGreeting: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.7)",
+    flex: 1,
   },
-  streakEmoji: { fontSize: 15 },
-  streakNum: { fontSize: 17, fontFamily: "Inter_700Bold" },
-  streakLabel: { fontSize: 10, fontFamily: "Inter_400Regular" },
-  heroCard: {
-    borderRadius: 18, borderWidth: 1, padding: 16,
-    alignItems: "center", gap: 14, marginBottom: 12,
+  heroStreakPill: {
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  heroStreakText: {
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+  },
+  heroTitle: {
+    fontSize: 32,
+    fontFamily: "Inter_700Bold",
+    color: "#FFFFFF",
+    lineHeight: 38,
+  },
+  heroChipRow: { flexWrap: "wrap", gap: 8 },
+  heroChip: {
+    backgroundColor: "rgba(255,255,255,0.16)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.28)",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  heroChipText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    color: "#FFFFFF",
+  },
+  heroStatsRow: {
+    gap: 16,
+    alignItems: "center",
+    marginTop: 4,
   },
   heroRight: { flex: 1, gap: 10 },
-  heroStats: { alignItems: "center" },
+  heroStatRow: { alignItems: "center" },
   heroStat: { flex: 1, alignItems: "center" },
-  heroVal: { fontSize: 18, fontFamily: "Inter_700Bold" },
-  heroLabel: { fontSize: 10, fontFamily: "Inter_400Regular", marginTop: 1, textAlign: "center" },
-  heroDivider: { width: 1, height: 26 },
-  nextTarget: {
-    alignItems: "center", gap: 5,
-    paddingHorizontal: 9, paddingVertical: 5, borderRadius: 9,
+  heroStatVal: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  heroStatLabel: {
+    fontSize: 9,
+    fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.65)",
+    textAlign: "center",
+    marginTop: 2,
   },
-  nextTargetText: { fontSize: 11, fontFamily: "Inter_600SemiBold", flex: 1 },
-  hadithCard: { borderRadius: 14, padding: 13, marginBottom: 16, borderWidth: 1, gap: 5 },
-  hadithHeader: { alignItems: "center", gap: 6 },
+  heroStatSep: { width: 1, height: 26, backgroundColor: "rgba(255,255,255,0.2)" },
+  heroMilestone: {
+    backgroundColor: "rgba(255,255,255,0.14)",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    alignItems: "center",
+    gap: 4,
+  },
+  heroMilestoneText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    color: "rgba(255,255,255,0.92)",
+    textAlign: "center",
+  },
+
+  content: { paddingHorizontal: 16, paddingTop: 18 },
+  hadithCard: {
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+    gap: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  hadithHeader: { alignItems: "center", gap: 7 },
   hadithDot: { width: 6, height: 6, borderRadius: 3 },
-  hadithSource: { fontSize: 10, fontFamily: "Inter_600SemiBold", letterSpacing: 0.5, textTransform: "uppercase" },
-  hadithText: { fontSize: 12.5, fontFamily: "Inter_400Regular", lineHeight: 19, fontStyle: "italic" },
-  sectionHeader: {
-    alignItems: "baseline",
-    justifyContent: "space-between", marginBottom: 10,
-  },
-  sectionTitle: { fontSize: 17, fontFamily: "Inter_700Bold" },
+  hadithSource: { fontSize: 10, fontFamily: "Inter_600SemiBold", letterSpacing: 0.6, textTransform: "uppercase" },
+  hadithText: { fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 20, fontStyle: "italic" },
+
+  sectionHeader: { alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 },
+  sectionTitle: { fontSize: 18, fontFamily: "Inter_700Bold" },
   sectionHint: { fontSize: 11, fontFamily: "Inter_400Regular" },
+
   fab: {
     position: "absolute", left: 0, right: 0,
     paddingHorizontal: 16, paddingTop: 10, alignItems: "center",
@@ -272,9 +352,9 @@ const styles = StyleSheet.create({
   },
   quickLogBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 10, paddingVertical: 15, borderRadius: 18, width: "100%",
+    gap: 10, paddingVertical: 16, borderRadius: 20, width: "100%",
     shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
+    shadowOpacity: 0.18, shadowRadius: 14, elevation: 7,
   },
   quickLogText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
   quickLogPill: {
