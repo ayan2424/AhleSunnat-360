@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -325,9 +326,15 @@ export default function TasbihScreen() {
       </ScrollView>
 
       {/* Target Input Modal */}
-      {showTargetInput && (
-        <View style={[styles.targetOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
-          <View style={[styles.targetSheet, { backgroundColor: colors.card }]}>
+      <Modal
+        visible={showTargetInput}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowTargetInput(false)}
+      >
+        <Pressable style={[styles.targetOverlay, { backgroundColor: colors.overlay }]} onPress={() => setShowTargetInput(false)}>
+          <Pressable style={[styles.targetSheet, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
+            <View style={[styles.targetHandle, { backgroundColor: colors.border }]} />
             <Text style={[styles.targetTitle, { color: colors.foreground }]}>
               {t("setTarget")} · {preset.transliteration}
             </Text>
@@ -353,9 +360,9 @@ export default function TasbihScreen() {
                 <Text style={{ color: "#FFF", fontFamily: "Inter_700Bold" }}>{t("set")}</Text>
               </Pressable>
             </View>
-          </View>
-        </View>
-      )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -423,10 +430,11 @@ const styles = StyleSheet.create({
   },
   resetText: { fontSize: 13, fontFamily: "Inter_500Medium" },
 
-  targetOverlay: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "flex-end" },
+  targetOverlay: { flex: 1, alignItems: "center", justifyContent: "flex-end" },
+  targetHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 4 },
   targetSheet: {
-    width: "100%", padding: 24, paddingBottom: 40,
-    borderTopLeftRadius: 24, borderTopRightRadius: 24, gap: 16,
+    width: "100%", padding: 24, paddingBottom: 44,
+    borderTopLeftRadius: 24, borderTopRightRadius: 24, gap: 14,
   },
   targetTitle: { fontSize: 16, fontFamily: "Inter_700Bold", textAlign: "center" },
   targetInput: {

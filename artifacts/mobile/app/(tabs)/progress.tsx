@@ -97,9 +97,9 @@ export default function ProgressScreen() {
             sublabel={t("complete")}
           />
           <View style={styles.overallStats}>
-            <StatPill label={t("total")} value={totalInitial.toLocaleString()} color={colors.foreground} bg={colors.muted} />
-            <StatPill label={t("done")} value={totalCompletedCalc.toLocaleString()} color={colors.emerald} bg={colors.emeraldLight} />
-            <StatPill label={t("left")} value={totalRemaining.toLocaleString()} color={colors.mutedForeground} bg={colors.muted} />
+            <StatPill label={t("total")} value={totalInitial.toLocaleString()} color={colors.foreground} bg={colors.muted} labelColor={colors.mutedForeground} />
+            <StatPill label={t("done")} value={totalCompletedCalc.toLocaleString()} color={colors.emerald} bg={colors.emeraldLight} labelColor={colors.mutedForeground} />
+            <StatPill label={t("left")} value={totalRemaining.toLocaleString()} color={colors.mutedForeground} bg={colors.muted} labelColor={colors.mutedForeground} />
           </View>
         </View>
 
@@ -254,11 +254,11 @@ export default function ProgressScreen() {
   );
 }
 
-function StatPill({ label, value, color, bg }: { label: string; value: string; color: string; bg: string }) {
+function StatPill({ label, value, color, bg, labelColor }: { label: string; value: string; color: string; bg: string; labelColor?: string }) {
   return (
     <View style={[pillStyles.pill, { backgroundColor: bg }]}>
       <Text style={[pillStyles.val, { color }]}>{value}</Text>
-      <Text style={pillStyles.label}>{label}</Text>
+      <Text style={[pillStyles.label, labelColor ? { color: labelColor } : undefined]}>{label}</Text>
     </View>
   );
 }
@@ -266,7 +266,7 @@ function StatPill({ label, value, color, bg }: { label: string; value: string; c
 const pillStyles = StyleSheet.create({
   pill: { flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12 },
   val: { fontSize: 17, fontFamily: "Inter_700Bold" },
-  label: { fontSize: 10, fontFamily: "Inter_400Regular", color: "#737373", marginTop: 1 },
+  label: { fontSize: 10, fontFamily: "Inter_400Regular", color: "#6B8070", marginTop: 1 },
 });
 
 const styles = StyleSheet.create({

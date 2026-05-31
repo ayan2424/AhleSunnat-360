@@ -10,13 +10,13 @@ import {
   StyleSheet,
   Text,
   View,
-  useColorScheme,
 } from "react-native";
 import { HadithCarousel } from "@/components/HadithCarousel";
 import { MilestoneModal } from "@/components/MilestoneModal";
 import { PrayerCard } from "@/components/PrayerCard";
 import { ProgressRing } from "@/components/ProgressRing";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useColors } from "@/hooks/useColors";
 import { useLayout } from "@/hooks/useLayout";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -28,7 +28,6 @@ import { getStreakEmoji, isStreakActive } from "@/utils/streak";
 
 export default function TrackerScreen() {
   const colors = useColors();
-  const colorScheme = useColorScheme();
   const { topPad, scrollBottomFab, fabBottom, isSmall } = useLayout();
   const { t, isRTL } = useTranslation();
   const {
@@ -37,12 +36,12 @@ export default function TrackerScreen() {
     decrementPrayer, incrementPrayer, logFullDay,
   } = useApp();
 
+  const { isDark } = useTheme();
   const quickLogScale = useRef(new Animated.Value(1)).current;
 
   const hijri = toHijri();
   const hijriLabel = formatHijri(hijri);
   const specialNight = getSpecialNights(hijri);
-
   const totalRemaining = currentCounts ? getTotalRemaining(currentCounts) : 0;
   const overallPercent = currentCounts && initialCounts
     ? getCompletionPercent(initialCounts, currentCounts) : 0;
@@ -51,7 +50,6 @@ export default function TrackerScreen() {
   const nextMilestone = getNextMilestone(totalCompleted);
   const daysUntilNext = nextMilestone ? nextMilestone.value - totalCompleted : null;
 
-  const isDark = colorScheme === "dark";
   const heroColors: [string, string] = isDark
     ? ["#1A3A24", "#0D1A12"]
     : ["#237A50", "#0D3D26"];
@@ -165,6 +163,13 @@ export default function TrackerScreen() {
             </View>
           </View>
         </LinearGradient>
+
+        {/* ── Salawat Banner ── */}
+        <View style={[styles.salawatBanner, { backgroundColor: colors.goldLight, borderBottomColor: colors.gold + "50" }]}>
+          <Text style={[styles.salawatArabic, { color: colors.gold }]}>
+            صَلَّى اللّٰهُ عَلَيْهِ وَعَلٰى آلِهٖ وَسَلَّمَ
+          </Text>
+        </View>
 
         {/* ── Content below hero ── */}
         <View style={styles.content}>
@@ -305,7 +310,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  content: { paddingHorizontal: 16, paddingTop: 18 },
+  salawatBanner: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    borderBottomWidth: 1,
+  },
+  salawatArabic: {
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.5,
+  },
+  content: { paddingHorizontal: 16, paddingTop: 14 },
   sectionHeader: { alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 },
   sectionTitle: { fontSize: 18, fontFamily: "Inter_700Bold" },
   sectionHint: { fontSize: 11, fontFamily: "Inter_400Regular" },

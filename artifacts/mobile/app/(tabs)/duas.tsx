@@ -85,34 +85,38 @@ export default function DuasScreen() {
           {t("azkar")}
         </Text>
 
-        {/* Category Tabs — 2×2 grid */}
-        <View style={styles.catGrid}>
+        {/* Category Tabs — horizontal scroll */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.catScroll}
+          contentContainerStyle={styles.catContent}
+        >
           {DUA_CATEGORIES.map(({ key, icon }) => {
             const sel = key === category;
+            const isSalawat = key === "salawat";
+            const selBg = isSalawat && sel ? colors.gold : sel ? colors.emerald : colors.card;
+            const selBorder = isSalawat && sel ? colors.gold : sel ? colors.emerald : colors.border;
             return (
               <Pressable
                 key={key}
                 onPress={() => setCategory(key)}
                 style={[
                   styles.catBtn,
-                  {
-                    backgroundColor: sel ? colors.emerald : colors.card,
-                    borderColor: sel ? colors.emerald : colors.border,
-                  },
+                  { backgroundColor: selBg, borderColor: selBorder },
                 ]}
               >
                 <Text style={styles.catIcon}>{icon}</Text>
                 <Text
                   style={[styles.catLabel, { color: sel ? "#FFF" : colors.mutedForeground }]}
                   numberOfLines={1}
-                  adjustsFontSizeToFit
                 >
                   {categoryLabels[key]}
                 </Text>
               </Pressable>
             );
           })}
-        </View>
+        </ScrollView>
 
         {/* Progress for this category */}
         <View style={[styles.progressRow, { flexDirection: isRTL ? "row-reverse" : "row", backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -230,10 +234,11 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { paddingHorizontal: 16 },
   pageTitle: { fontSize: 24, fontFamily: "Inter_700Bold", marginBottom: 14 },
-  catGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
-  catBtn: { width: "48%", alignItems: "center", paddingVertical: 10, paddingHorizontal: 6, borderRadius: 12, borderWidth: 1, gap: 4 },
-  catIcon: { fontSize: 18 },
-  catLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", textAlign: "center", minWidth: 0 },
+  catScroll: { marginBottom: 12, marginHorizontal: -16 },
+  catContent: { paddingHorizontal: 16, gap: 8, flexDirection: "row", alignItems: "center" },
+  catBtn: { flexDirection: "row", alignItems: "center", paddingVertical: 9, paddingHorizontal: 14, borderRadius: 22, borderWidth: 1.5, gap: 6 },
+  catIcon: { fontSize: 15 },
+  catLabel: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
   progressRow: { borderRadius: 12, borderWidth: 1, padding: 12, marginBottom: 14, gap: 10, alignItems: "center" },
   progressText: { fontSize: 13, fontFamily: "Inter_600SemiBold", minWidth: 90 },
   progressTrack: { flex: 1, height: 6, borderRadius: 3, overflow: "hidden" },

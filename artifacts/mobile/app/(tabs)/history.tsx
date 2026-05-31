@@ -7,7 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { isStreakActive } from "@/utils/streak";
 
 const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
-const WEEKS = 14;
+const WEEKS = 17;
 const GAP = 4;
 
 function getIntensity(count: number): number {

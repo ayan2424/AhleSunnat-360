@@ -9,11 +9,13 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   View,
 } from "react-native";
 import { useApp } from "@/context/AppContext";
 import { useLocale } from "@/context/LocaleContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useColors } from "@/hooks/useColors";
 import { useLayout } from "@/hooks/useLayout";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -28,6 +30,7 @@ export default function SettingsScreen() {
   const { t, isRTL } = useTranslation();
   const { language, setLanguage } = useLocale();
   const { userProfile, initialCounts, currentCounts, resetProgress } = useApp();
+  const { isDark, toggleTheme } = useTheme();
   const [exporting, setExporting] = useState(false);
   const [langModalVisible, setLangModalVisible] = useState(false);
 
@@ -117,6 +120,28 @@ export default function SettingsScreen() {
               color={colors.mutedForeground}
             />
           </Pressable>
+        </View>
+
+        {/* Appearance */}
+        <SectionLabel label={t("appearance")} isRTL={isRTL} colors={colors} />
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[rowStyles.actionRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <View style={[rowStyles.actionIcon, { backgroundColor: colors.emeraldLight }]}>
+              <Feather name="moon" size={16} color={colors.emerald} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[rowStyles.actionLabel, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>
+                {t("darkMode")}
+              </Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.emerald + "AA" }}
+              thumbColor={isDark ? colors.gold : "#F0F0F0"}
+              ios_backgroundColor={colors.border}
+            />
+          </View>
         </View>
 
         {/* Profile */}
@@ -337,7 +362,7 @@ function ActionRow({
       onPress={onPress}
       disabled={loading}
     >
-      <View style={[rowStyles.actionIcon, { backgroundColor: destructive ? "#FEE2E2" : colors.emeraldLight }]}>
+      <View style={[rowStyles.actionIcon, { backgroundColor: destructive ? colors.destructive + "20" : colors.emeraldLight }]}>
         <Feather name={icon as any} size={16} color={tint} />
       </View>
       <View style={{ flex: 1 }}>
